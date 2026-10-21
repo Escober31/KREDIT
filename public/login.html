@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Login — KreditCars</title>
+  <meta name="description" content="KreditCars login" />
+  <link rel="icon" href="images/KREDITCARS.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* small local tweaks */
+    .glass { background: rgba(14,22,33,0.65); backdrop-filter: blur(6px); }
+
+    /* keep nav height consistent and let main use it to avoid overlap */
+    :root {
+      --nav-h-mobile: 4rem; /* 64px (h-16) */
+      --nav-h-md: 5rem;     /* 80px (h-20) */
+    }
+    @media (min-width: 768px) {
+      :root { --nav-h: var(--nav-h-md); }
+    }
+    @media (max-width: 767px) {
+      :root { --nav-h: var(--nav-h-mobile); }
+    }
+
+    /* push page content below the fixed nav */
+    main { padding-top: calc(var(--nav-h) + 1rem); } /* +1rem breathing room */
+
+    /* logo hover effect */
+    .logo-hover:hover svg {
+      transform: rotate(5deg) scale(1.05);
+      transition: transform 0.3s ease;
+    }
+
+    /* mobile menu slide */
+    #mobile-menu {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+    #mobile-menu.show {
+      max-height: 500px;
+    }
+  </style>
+</head>
+<body class="bg-[#0E1621] text-slate-200 antialiased font-sans">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50 h-16 md:h-14 bg-[#07101a]/60 backdrop-blur-lg border-b border-slate-800 shadow-sm">
+    <div class="max-w-6xl mx-auto px-6 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 logo-hover">
+        <!-- SVG hexagon that clips the image inside and draws the orange border -->
+        <svg viewBox="0 0 100 100" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KreditCars logo">
+          <defs>
+            <clipPath id="hexClipLogoLogin">
+              <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" />
+            </clipPath>
+          </defs>
+
+          <!-- logo image -->
+          <image href="images/KREDITCARS.png"
+                 x="5" y="10" width="100" height="100"
+                 preserveAspectRatio="xMidYMid slice"
+                 clip-path="url(#hexClipLogoLogin)" />
+        </svg>
+
+        <div class="leading-tight">
+          <div class="text-xl font-black tracking-wider italic">Kredit<span class="text-amber-500">Cars</span></div>
+          <div class="text-xs text-cyan-400 uppercase tracking-widest">Trusted Pre-Owned Vehicles</div>
+        </div>
+      </a>
+
+      <div class="hidden md:flex items-center gap-4">
+      </div>
+    </div>
+  </nav>
+
+  <!-- LOGIN CARD -->
+  <main class="min-h-screen flex items-center justify-center pt-24 pb-10">
+    <div class="max-w-md w-full mx-6">
+      <div class="bg-[#081017] border border-slate-800 p-8 rounded-lg shadow-lg glass">
+        <h2 class="text-2xl font-bold text-white mb-2">Admin Login</h2>
+        <p class="text-slate-400 mb-6">Sign in with your credentials to access the dashboard.</p>
+
+        <form method="post" action="dashboard.html" class="space-y-4" autocomplete="off">
+          <label class="block">
+            <span class="text-slate-300 text-sm">Email</span>
+            <input type="email" name="email" required class="mt-1 block w-full bg-[#0E1621] border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-cyan-400"/>
+          </label>
+
+          <label class="block">
+            <span class="text-slate-300 text-sm">Password</span>
+            <input type="password" name="password" required class="mt-1 block w-full bg-[#0E1621] border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-cyan-400"/>
+          </label>
+
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 text-slate-400 text-sm">
+              <input type="checkbox" name="remember" class="accent-cyan-400"/>
+              Remember me
+            </label>
+          </div>
+
+          <button type="submit" class="w-full mt-2 bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 uppercase">Login</button>
+        </form>
+
+        <p class="text-slate-500 text-sm mt-4">Don't have an account try <a href="signin.html" class="text-cyan-400">Sign In</a>.</p>
+      </div>
+    </div>
+  </main>
+
+<script>
+// Mobile menu toggle
+const mobileBtn = document.getElementById('mobile-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+if (mobileBtn && mobileMenu) {
+  mobileBtn.addEventListener('click', function(){
+    mobileMenu.classList.toggle('show');
+    mobileBtn.setAttribute('aria-expanded', mobileMenu.classList.contains('show'));
+  });
+}
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+  anchor.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if(target) target.scrollIntoView({ behavior: 'smooth' });
+    if(mobileMenu && mobileMenu.classList.contains('show')) mobileMenu.classList.remove('show');
+  });
+});
+
+// Toggle Add Form
+const addForm = document.getElementById('add-form');
+const toggleBtn = document.getElementById('toggle-add-form');
+const cancelBtn = document.getElementById('cancel-add');
+
+if (toggleBtn && addForm) {
+  toggleBtn.addEventListener('click', () => {
+    addForm.classList.toggle('hidden');
+    if(!addForm.classList.contains('hidden')) addForm.scrollIntoView({behavior:'smooth'});
+  });
+}
+if (cancelBtn && addForm) {
+  cancelBtn.addEventListener('click', () => addForm.classList.add('hidden'));
+}
+</script>
+
+</body>
+</html>

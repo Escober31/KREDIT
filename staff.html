@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Staff Management — KreditCars</title>
+  <meta name="description" content="Manage staff accounts" />
+  <link rel="icon" href="images/KREDITCARS.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --nav-h-mobile: 4rem; --nav-h-md: 5rem; }
+    @media (min-width: 768px) { :root { --nav-h: var(--nav-h-md); } }
+    @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
+    main { padding-top: calc(var(--nav-h) + 1rem); }
+  </style>
+</head>
+<body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
+
+  <!-- NAV -->
+  <nav class="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 bg-[#07101a]/60 backdrop-blur-lg border-b border-slate-800 shadow-sm">
+    <div class="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <svg viewBox="0 0 100 100" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KreditCars logo">
+          <defs>
+            <clipPath id="hexClipLogoStaff"><polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" /></clipPath>
+          </defs>
+          <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" fill="none" stroke="#f59e0b" stroke-width="6" stroke-linejoin="round" />
+          <image href="images/KREDITCARS.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" clip-path="url(#hexClipLogoStaff)" />
+        </svg>
+
+        <div class="leading-tight">
+          <div class="text-xl font-black tracking-wider italic">Kredit<span class="text-amber-500">Cars</span></div>
+          <div class="text-xs text-cyan-400 uppercase tracking-widest">Trusted Pre-Owned Vehicles</div>
+        </div>
+      </a>
+
+      <div class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Inventory</a>
+        <a href="staff.html" class="uppercase text-sm text-amber-500 font-bold hover:text-white transition">Staff</a>
+        <a href="customer.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Customers</a>
+        <a href="notify.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Notify</a>
+        <a href="admin_create_user.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Register</a>
+        <a href="activity.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Activity</a>
+        <a href="dashboard.html" class="bg-amber-500 px-5 py-2 text-black font-bold uppercase transform -skew-x-6 hover:-translate-y-0.5 transition">
+          <span class="inline-block skew-x-6">DashBoard</span>
+        </a>
+      </div>
+
+      <button id="mobile-btn" aria-expanded="false" class="md:hidden text-white" aria-label="Toggle navigation">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-[#07101a]/95 backdrop-blur-md border-t border-slate-800">
+      <div class="px-6 py-4 flex flex-col gap-3">
+        <a href="index.html" class="text-slate-200 hover:text-amber-500 py-1">Inventory</a>
+        <a href="staff.html" class="text-amber-500 font-bold py-1">Staff</a>
+        <a href="customer.html" class="text-slate-200 hover:text-amber-500 py-1">Customers</a>
+        <a href="notify.html" class="text-slate-200 hover:text-amber-500 py-1">Notify</a>
+        <a href="admin_create_user.html" class="text-slate-200 hover:text-amber-500 py-1">Register</a>
+        <a href="activity.html" class="text-slate-200 hover:text-amber-500 py-1">Activity</a>
+        <a href="dashboard.html" class="mt-2 inline-block bg-amber-500 text-black text-center px-4 py-2 uppercase font-bold">DashBoard</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTAINER (Matching customer.html and index.html) -->
+  <main class="pt-24 max-w-7xl mx-auto px-6 pb-20 w-full flex-1">
+    <div class="bg-[#07101a]/60 border border-slate-800 rounded-xl p-4 md:p-6 shadow-xl">
+
+      <!-- Header row: Title + Actions -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-white italic">Staff <span class="text-amber-500">Management</span></h1>
+          <p class="text-sm text-slate-400 mt-1">Manage accounts for staff members & administrators</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <a href="admin_create_user.html" class="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-sm shadow">
+            <span class="inline-block skew-x-6">+ Add Staff</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Staff table container -->
+      <div class="bg-[#0B1320] border border-slate-800 rounded-xl overflow-hidden shadow-lg">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left table-auto text-sm">
+            <thead class="bg-slate-900/80 border-b border-slate-800 text-slate-300 uppercase text-xs">
+              <tr>
+                <th class="px-4 py-3">Photo</th>
+                <th class="px-4 py-3">Name</th>
+                <th class="px-4 py-3">Email</th>
+                <th class="px-4 py-3">Contact</th>
+                <th class="px-4 py-3">Position</th>
+                <th class="px-4 py-3">Created</th>
+                <th class="px-4 py-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-800/80">
+              <!-- Staff Row 1 -->
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="px-4 py-3 align-middle">
+                  <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
+                    <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                  </div>
+                </td>
+                <td class="px-4 py-3 align-middle font-medium text-white">Santos, Maria</td>
+                <td class="px-4 py-3 align-middle text-slate-300">maria.santos@kreditcars.com</td>
+                <td class="px-4 py-3 align-middle text-slate-400">+63 917 123 4567</td>
+                <td class="px-4 py-3 align-middle">
+                  <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Admin</span>
+                </td>
+                <td class="px-4 py-3 align-middle text-xs text-slate-400">2026-01-15</td>
+                <td class="px-4 py-3 align-middle text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <a href="admin_create_user.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
+                    <button type="button" onclick="confirm('Delete staff Maria Santos?')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Staff Row 2 -->
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="px-4 py-3 align-middle">
+                  <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
+                    <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                  </div>
+                </td>
+                <td class="px-4 py-3 align-middle font-medium text-white">Dela Cruz, Juan</td>
+                <td class="px-4 py-3 align-middle text-slate-300">juan.delacruz@kreditcars.com</td>
+                <td class="px-4 py-3 align-middle text-slate-400">+63 918 234 5678</td>
+                <td class="px-4 py-3 align-middle">
+                  <span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Staff</span>
+                </td>
+                <td class="px-4 py-3 align-middle text-xs text-slate-400">2026-02-10</td>
+                <td class="px-4 py-3 align-middle text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <a href="admin_create_user.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
+                    <button type="button" onclick="confirm('Delete staff Juan Dela Cruz?')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- Staff Row 3 -->
+              <tr class="hover:bg-slate-900/50 transition">
+                <td class="px-4 py-3 align-middle">
+                  <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
+                    <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                  </div>
+                </td>
+                <td class="px-4 py-3 align-middle font-medium text-white">Reyes, Roberto</td>
+                <td class="px-4 py-3 align-middle text-slate-300">roberto.reyes@kreditcars.com</td>
+                <td class="px-4 py-3 align-middle text-slate-400">+63 920 345 6789</td>
+                <td class="px-4 py-3 align-middle">
+                  <span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Staff</span>
+                </td>
+                <td class="px-4 py-3 align-middle text-xs text-slate-400">2026-03-01</td>
+                <td class="px-4 py-3 align-middle text-center">
+                  <div class="flex items-center justify-center gap-2">
+                    <a href="admin_create_user.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
+                    <button type="button" onclick="confirm('Delete staff Roberto Reyes?')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-6 text-xs text-slate-500">
+        <p>Tip: Staff accounts have permissions to review customers, inventory, and inquiries. Administrator privileges allow account creation and deletions.</p>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-black text-slate-500 py-12 border-t border-slate-900 mt-auto">
+    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-8 mb-8">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <svg class="w-6 h-6 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+          <div class="text-xl font-bold text-white">Kredit<span class="text-amber-500">Cars</span></div>
+        </div>
+
+        <p class="max-w-xs mb-4 text-sm text-slate-400">KreditCars — quality pre-owned vehicles in Olongapo City. Honest service and tailored financing to help you drive away happy.</p>
+
+        <div class="flex gap-3">
+          <a href="#" class="w-10 h-10 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-600 transition text-sm font-semibold">F</a>
+          <a href="#" class="w-10 h-10 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-600 transition text-sm font-semibold">I</a>
+          <a href="#" class="w-10 h-10 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-600 transition text-sm font-semibold">M</a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase mb-3 text-sm tracking-wider">Office</h4>
+        <p class="text-sm">Olongapo City, Philippines</p>
+        <p class="mt-3 text-amber-500 text-sm font-medium">Mon - Fri: 9:00 AM - 6:00 PM</p>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase mb-3 text-sm tracking-wider">Quick Links</h4>
+        <div class="flex flex-col space-y-2 text-sm">
+          <a href="index.html" class="hover:text-amber-400 transition">Inventory</a>
+          <a href="staff.html" class="hover:text-amber-400 transition">Staff</a>
+          <a href="customer.html" class="hover:text-amber-400 transition">Customers</a>
+          <a href="notify.html" class="hover:text-amber-400 transition">Notifications</a>
+          <a href="dashboard.html" class="hover:text-amber-400 transition">Dashboard</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm pt-4 border-t border-slate-900/60">
+      <p>© 2026 KreditCars. All rights reserved.</p>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+        <span class="text-green-500 font-bold uppercase text-xs">System Online</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // mobile menu toggle
+    const mobileBtn = document.getElementById('mobile-btn');
+    if (mobileBtn) {
+      mobileBtn.addEventListener('click', function(){
+        const menu = document.getElementById('mobile-menu');
+        const expanded = this.getAttribute('aria-expanded') === 'true';
+        this.setAttribute('aria-expanded', (!expanded).toString());
+        if (menu) menu.classList.toggle('hidden');
+      });
+    }
+  </script>
+</body>
+</html>
