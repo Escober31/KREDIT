@@ -3,30 +3,21 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Notifications — KreditCars</title>
-  <meta name="description" content="KreditCars admin notifications and staff applications" />
+  <title>KreditCars — Notifications</title>
+  <meta name="description" content="KreditCars notifications and staff recruitment applications" />
   <link rel="icon" href="images/KREDITCARS.png" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    :root {
-      --nav-h-mobile: 4rem;
-      --nav-h-md: 5rem;
-    }
+    :root { --nav-h-mobile: 4rem; --nav-h-md: 5rem; }
     @media (min-width: 768px) { :root { --nav-h: var(--nav-h-md); } }
     @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
-    main { padding-top: calc(var(--nav-h) + 1.5rem); }
-    body {
-      background: radial-gradient(ellipse at 10% 10%, rgba(7,16,26,0.7), transparent 20%),
-                  radial-gradient(ellipse at 90% 90%, rgba(2,6,23,0.6), transparent 25%),
-                  #07101a;
-    }
+    main { padding-top: calc(var(--nav-h) + 1rem); }
   </style>
 </head>
+<body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
 
-<body class="bg-[#07101a] text-white min-h-screen flex flex-col font-sans antialiased">
-
-  <!-- NAVBAR -->
-  <nav class="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 bg-[#07101a]/80 backdrop-blur-lg border-b border-slate-800 shadow-sm">
+  <!-- NAV (Matching customer.html) -->
+  <nav class="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 bg-[#07101a]/60 backdrop-blur-lg border-b border-slate-800 shadow-sm">
     <div class="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3">
         <svg viewBox="0 0 100 100" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KreditCars logo">
@@ -55,213 +46,272 @@
         </a>
       </div>
 
-      <button id="mobile-btn" aria-expanded="false" class="md:hidden text-white p-2 rounded-lg hover:bg-slate-800 focus:outline-none" aria-label="Toggle navigation">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      <button id="mobile-btn" aria-expanded="false" class="md:hidden text-white" aria-label="Toggle navigation">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </div>
 
-    <!-- Mobile Menu Dropdown -->
     <div id="mobile-menu" class="hidden md:hidden bg-[#07101a]/95 backdrop-blur-md border-t border-slate-800">
       <div class="px-6 py-4 flex flex-col gap-3">
-        <a href="index.html" class="text-slate-200 hover:text-amber-500 font-medium py-1">Inventory</a>
-        <a href="staff.html" class="text-slate-200 hover:text-amber-500 font-medium py-1">Staff</a>
-        <a href="customer.html" class="text-slate-200 hover:text-amber-500 font-medium py-1">Customers</a>
+        <a href="index.html" class="text-slate-200 hover:text-amber-500 py-1">Inventory</a>
+        <a href="staff.html" class="text-slate-200 hover:text-amber-500 py-1">Staff</a>
+        <a href="customer.html" class="text-slate-200 hover:text-amber-500 py-1">Customers</a>
         <a href="notify.html" class="text-amber-500 font-bold py-1">Notify</a>
-        <a href="admin_create_user.html" class="text-slate-200 hover:text-amber-500 font-medium py-1">Register</a>
-        <a href="activity.html" class="text-slate-200 hover:text-amber-500 font-medium py-1">Activity</a>
+        <a href="admin_create_user.html" class="text-slate-200 hover:text-amber-500 py-1">Register</a>
+        <a href="activity.html" class="text-slate-200 hover:text-amber-500 py-1">Activity</a>
         <a href="dashboard.html" class="mt-2 inline-block bg-amber-500 text-black text-center px-4 py-2 uppercase font-bold">DashBoard</a>
       </div>
     </div>
   </nav>
 
-  <!-- PAGE CONTENT -->
-  <main class="flex-1 max-w-6xl mx-auto px-6 w-full space-y-6 pb-20">
+  <!-- MAIN CONTAINER (Matching customer.html) -->
+  <main class="pt-24 max-w-7xl mx-auto px-6 pb-20 w-full flex-1">
+    <div class="bg-[#07101a]/60 border border-slate-800 rounded-xl p-4 md:p-6 shadow-xl">
 
-    <!-- PAGE HEADER -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800/80 pb-5">
-      <div>
-        <h1 class="text-3xl font-bold tracking-wide text-white">Staff Applications</h1>
-        <p class="text-slate-400 text-sm mt-1">Review, accept, or reject incoming staff recruitment applications.</p>
+      <!-- Header row: Title + Actions (Matching customer.html) -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-white italic">Notification <span class="text-amber-500">Center</span></h1>
+          <p class="text-sm text-slate-400 mt-1">Review, accept, or reject incoming staff recruitment applications and customer requests</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span id="pending-badge" class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-full text-xs font-semibold">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="pending-badge-text">3 Pending Applications</span>
+          </span>
+        </div>
       </div>
-      <div class="flex items-center gap-2">
-        <span id="pending-badge" class="px-3 py-1 bg-amber-500/20 text-amber-400 border border-amber-500/40 rounded-full text-xs font-semibold">
-          3 Pending Applications
-        </span>
+
+      <!-- FLASH MESSAGE CONTAINER -->
+      <div id="flash-container" class="hidden mb-6"></div>
+
+      <!-- TWO-COLUMN LAYOUT (Matching customer.html) -->
+      <div class="md:flex md:gap-6">
+        
+        <!-- LEFT: compact notifications (small column matching customer.html) -->
+        <aside class="w-full md:w-1/4">
+          <div class="bg-black/40 border border-slate-800 rounded-xl p-4 shadow-md">
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-semibold text-white">Recent Requests</h2>
+              <span class="text-[10px] text-amber-500 font-mono font-bold uppercase tracking-wider">Live</span>
+            </div>
+
+            <div class="space-y-3">
+              <!-- Request 1 -->
+              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition" id="req-1">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex-1">
+                    <div class="uppercase text-[10px] text-slate-400 font-semibold tracking-wider">Inquiry</div>
+                    <div class="font-medium text-sm text-white mt-0.5">Juan Garcia</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">+63 915 889 1234 — Financing (36 mo)</div>
+                    <div class="text-[11px] text-slate-500 mt-1">2026-10-20 14:22</div>
+                  </div>
+
+                  <button type="button" onclick="acceptRequest('req-1', 'Juan Garcia')" class="flex-shrink-0 bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
+                    <span class="inline-block skew-x-6">Accept</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Request 2 -->
+              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition" id="req-2">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex-1">
+                    <div class="uppercase text-[10px] text-slate-400 font-semibold tracking-wider">Trade-In</div>
+                    <div class="font-medium text-sm text-white mt-0.5">Elena Rodriguez</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">+63 922 456 7890 — Montero Sport</div>
+                    <div class="text-[11px] text-slate-500 mt-1">2026-10-21 09:15</div>
+                  </div>
+
+                  <button type="button" onclick="acceptRequest('req-2', 'Elena Rodriguez')" class="flex-shrink-0 bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
+                    <span class="inline-block skew-x-6">Accept</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Request 3 -->
+              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition" id="req-3">
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex-1">
+                    <div class="uppercase text-[10px] text-slate-400 font-semibold tracking-wider">Financing</div>
+                    <div class="font-medium text-sm text-white mt-0.5">Carlos Mendoza</div>
+                    <div class="text-[11px] text-slate-400 mt-0.5">+63 917 111 2233 — Ford Ranger</div>
+                    <div class="text-[11px] text-slate-500 mt-1">2026-10-22 08:30</div>
+                  </div>
+
+                  <button type="button" onclick="acceptRequest('req-3', 'Carlos Mendoza')" class="flex-shrink-0 bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
+                    <span class="inline-block skew-x-6">Accept</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </aside>
+
+        <!-- RIGHT: wide applications listing (Matching customer.html) -->
+        <section class="w-full md:w-3/4 mt-6 md:mt-0">
+          <div class="bg-black/40 border border-slate-800 rounded-xl p-4 shadow-md">
+            
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+              <h2 class="text-sm font-semibold text-white">Staff Recruitment Applications</h2>
+
+              <!-- Status filter tag -->
+              <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-400 uppercase font-mono">Status:</span>
+                <span class="bg-slate-900 border border-slate-700 text-amber-400 text-xs font-semibold px-2.5 py-1 rounded">
+                  Pending Review
+                </span>
+              </div>
+            </div>
+
+            <!-- Empty State (Hidden when items exist) -->
+            <div id="empty-state" class="hidden bg-[#0B1320] border border-slate-800 rounded-xl p-10 text-center text-slate-400 my-2">
+              <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 class="text-base font-bold text-slate-200 mb-1">All Applications Reviewed</h3>
+              <p class="text-xs text-slate-500 max-w-sm mx-auto">There are no pending staff applications at this time. New applicant submissions will appear here automatically.</p>
+            </div>
+
+            <!-- Applications Table (Styled identically to customer.html table) -->
+            <div id="table-wrapper" class="overflow-x-auto rounded-lg border border-slate-800/80">
+              <table class="min-w-full text-left text-sm table-auto">
+                <thead class="bg-slate-900/60">
+                  <tr class="text-slate-400 uppercase text-[11px] border-b border-slate-800">
+                    <th class="px-4 py-3 w-14">ID</th>
+                    <th class="px-4 py-3">Applicant Name</th>
+                    <th class="px-4 py-3">Applied Position</th>
+                    <th class="px-4 py-3">Contact Info</th>
+                    <th class="px-4 py-3">Applied Date</th>
+                    <th class="px-4 py-3 text-center">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="applications-table-body" class="divide-y divide-slate-800/80">
+                  
+                  <!-- Applicant 1 -->
+                  <tr class="app-row hover:bg-slate-800/30 transition" data-id="1" data-name="Cruz, Eduardo">
+                    <td class="px-4 py-3 align-middle text-slate-400 font-mono text-xs">#01</td>
+                    <td class="px-4 py-3 align-middle font-medium text-white">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                        </div>
+                        <span>Cruz, Eduardo</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 align-middle">
+                      <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
+                        Sales Consultant
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-xs text-slate-300">
+                      <div>eduardo.cruz@example.com</div>
+                      <div class="text-slate-500 mt-0.5">+63 918 555 0192</div>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-xs text-slate-400 font-mono">2026-10-21</td>
+                    <td class="px-4 py-3 align-middle text-center">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <button type="button" onclick="handleAction(1, 'accept')" class="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1 rounded text-xs font-bold transition shadow">
+                          Accept
+                        </button>
+                        <button type="button" onclick="handleAction(1, 'reject')" class="bg-red-600/80 hover:bg-red-600 text-white px-2.5 py-1 rounded text-xs font-semibold transition">
+                          Reject
+                        </button>
+                        <a href="mailto:eduardo.cruz@example.com" class="p-1 text-slate-400 hover:text-cyan-400 transition" title="Email Applicant">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Applicant 2 -->
+                  <tr class="app-row hover:bg-slate-800/30 transition" data-id="2" data-name="Reyes, Angela">
+                    <td class="px-4 py-3 align-middle text-slate-400 font-mono text-xs">#02</td>
+                    <td class="px-4 py-3 align-middle font-medium text-white">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                        </div>
+                        <span>Reyes, Angela</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 align-middle">
+                      <span class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
+                        Loan & Finance Officer
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-xs text-slate-300">
+                      <div>angela.reyes@example.com</div>
+                      <div class="text-slate-500 mt-0.5">+63 927 444 8810</div>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-xs text-slate-400 font-mono">2026-10-20</td>
+                    <td class="px-4 py-3 align-middle text-center">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <button type="button" onclick="handleAction(2, 'accept')" class="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1 rounded text-xs font-bold transition shadow">
+                          Accept
+                        </button>
+                        <button type="button" onclick="handleAction(2, 'reject')" class="bg-red-600/80 hover:bg-red-600 text-white px-2.5 py-1 rounded text-xs font-semibold transition">
+                          Reject
+                        </button>
+                        <a href="mailto:angela.reyes@example.com" class="p-1 text-slate-400 hover:text-cyan-400 transition" title="Email Applicant">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <!-- Applicant 3 -->
+                  <tr class="app-row hover:bg-slate-800/30 transition" data-id="3" data-name="Bautista, Mark">
+                    <td class="px-4 py-3 align-middle text-slate-400 font-mono text-xs">#03</td>
+                    <td class="px-4 py-3 align-middle font-medium text-white">
+                      <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+                        </div>
+                        <span>Bautista, Mark</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3 align-middle">
+                      <span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
+                        Lead Vehicle Inspector
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-xs text-slate-300">
+                      <div>mark.bautista@example.com</div>
+                      <div class="text-slate-500 mt-0.5">+63 939 123 7741</div>
+                    </td>
+                    <td class="px-4 py-3 align-middle text-xs text-slate-400 font-mono">2026-10-19</td>
+                    <td class="px-4 py-3 align-middle text-center">
+                      <div class="flex items-center justify-center gap-1.5">
+                        <button type="button" onclick="handleAction(3, 'accept')" class="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1 rounded text-xs font-bold transition shadow">
+                          Accept
+                        </button>
+                        <button type="button" onclick="handleAction(3, 'reject')" class="bg-red-600/80 hover:bg-red-600 text-white px-2.5 py-1 rounded text-xs font-semibold transition">
+                          Reject
+                        </button>
+                        <a href="mailto:mark.bautista@example.com" class="p-1 text-slate-400 hover:text-cyan-400 transition" title="Email Applicant">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+        </section>
       </div>
+
     </div>
-
-    <!-- FLASH MESSAGE CONTAINER -->
-    <div id="flash-container" class="hidden"></div>
-
-    <!-- EMPTY STATE CARD (Hidden when applicants exist) -->
-    <div id="empty-state" class="hidden bg-[#081421] border border-slate-800 rounded-2xl p-12 text-center text-slate-400">
-      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-emerald-400">
-        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-        </svg>
-      </div>
-      <h3 class="text-lg font-bold text-slate-200 mb-1">No Pending Applications</h3>
-      <p class="text-sm text-slate-500 max-w-sm mx-auto">All staff applications have been reviewed. New submissions will appear here automatically.</p>
-    </div>
-
-    <!-- APPLICATIONS LIST -->
-    <div id="applications-list" class="space-y-5">
-
-      <!-- Application Card 1 -->
-      <div class="app-card bg-[#081421] border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row gap-6 md:items-center hover:border-amber-500/60 transition duration-200" data-id="1" data-name="Cruz, Eduardo">
-        <!-- PHOTO -->
-        <div class="w-24 h-24 rounded-xl overflow-hidden bg-slate-900 flex-shrink-0 flex items-center justify-center border border-slate-700/80">
-          <svg class="w-12 h-12 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-          </svg>
-        </div>
-
-        <!-- INFO -->
-        <div class="flex-1">
-          <div class="flex flex-wrap items-center gap-2">
-            <h2 class="font-bold text-lg text-white">Cruz, Eduardo</h2>
-            <span class="text-xs bg-slate-800 px-2.5 py-1 rounded-md text-amber-400 border border-slate-700 font-medium">
-              Sales Consultant
-            </span>
-          </div>
-
-          <div class="text-sm text-slate-300 mt-2 flex flex-wrap gap-x-3 gap-y-1">
-            <span class="flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              eduardo.cruz@example.com
-            </span>
-            <span class="text-slate-600">•</span>
-            <span class="flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-              +63 918 555 0192
-            </span>
-          </div>
-
-          <div class="text-xs text-slate-500 mt-2 flex items-center gap-1">
-            <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Applied: 2026-10-21 14:15:00
-          </div>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="flex flex-row md:flex-col gap-2 justify-end">
-          <button type="button" onclick="handleAction(1, 'accept')" class="px-5 py-2 rounded-lg bg-amber-500 text-black font-bold hover:bg-amber-400 active:scale-95 transition shadow text-sm">
-            Accept
-          </button>
-          <button type="button" onclick="handleAction(1, 'reject')" class="px-5 py-2 rounded-lg bg-red-700 text-white font-semibold hover:bg-red-600 active:scale-95 transition shadow text-sm">
-            Reject
-          </button>
-          <a href="mailto:eduardo.cruz@example.com?subject=KreditCars%20Application%20Status" class="text-xs text-cyan-400 hover:underline text-center mt-1 py-1">
-            Email Applicant
-          </a>
-        </div>
-      </div>
-
-      <!-- Application Card 2 -->
-      <div class="app-card bg-[#081421] border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row gap-6 md:items-center hover:border-amber-500/60 transition duration-200" data-id="2" data-name="Reyes, Angela">
-        <!-- PHOTO -->
-        <div class="w-24 h-24 rounded-xl overflow-hidden bg-slate-900 flex-shrink-0 flex items-center justify-center border border-slate-700/80">
-          <svg class="w-12 h-12 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-          </svg>
-        </div>
-
-        <!-- INFO -->
-        <div class="flex-1">
-          <div class="flex flex-wrap items-center gap-2">
-            <h2 class="font-bold text-lg text-white">Reyes, Angela</h2>
-            <span class="text-xs bg-slate-800 px-2.5 py-1 rounded-md text-amber-400 border border-slate-700 font-medium">
-              Loan & Finance Officer
-            </span>
-          </div>
-
-          <div class="text-sm text-slate-300 mt-2 flex flex-wrap gap-x-3 gap-y-1">
-            <span class="flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              angela.reyes@example.com
-            </span>
-            <span class="text-slate-600">•</span>
-            <span class="flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-              +63 927 444 8810
-            </span>
-          </div>
-
-          <div class="text-xs text-slate-500 mt-2 flex items-center gap-1">
-            <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Applied: 2026-10-20 11:40:15
-          </div>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="flex flex-row md:flex-col gap-2 justify-end">
-          <button type="button" onclick="handleAction(2, 'accept')" class="px-5 py-2 rounded-lg bg-amber-500 text-black font-bold hover:bg-amber-400 active:scale-95 transition shadow text-sm">
-            Accept
-          </button>
-          <button type="button" onclick="handleAction(2, 'reject')" class="px-5 py-2 rounded-lg bg-red-700 text-white font-semibold hover:bg-red-600 active:scale-95 transition shadow text-sm">
-            Reject
-          </button>
-          <a href="mailto:angela.reyes@example.com?subject=KreditCars%20Application%20Status" class="text-xs text-cyan-400 hover:underline text-center mt-1 py-1">
-            Email Applicant
-          </a>
-        </div>
-      </div>
-
-      <!-- Application Card 3 -->
-      <div class="app-card bg-[#081421] border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-col md:flex-row gap-6 md:items-center hover:border-amber-500/60 transition duration-200" data-id="3" data-name="Bautista, Mark">
-        <!-- PHOTO -->
-        <div class="w-24 h-24 rounded-xl overflow-hidden bg-slate-900 flex-shrink-0 flex items-center justify-center border border-slate-700/80">
-          <svg class="w-12 h-12 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
-          </svg>
-        </div>
-
-        <!-- INFO -->
-        <div class="flex-1">
-          <div class="flex flex-wrap items-center gap-2">
-            <h2 class="font-bold text-lg text-white">Bautista, Mark</h2>
-            <span class="text-xs bg-slate-800 px-2.5 py-1 rounded-md text-amber-400 border border-slate-700 font-medium">
-              Lead Vehicle Inspector
-            </span>
-          </div>
-
-          <div class="text-sm text-slate-300 mt-2 flex flex-wrap gap-x-3 gap-y-1">
-            <span class="flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-              mark.bautista@example.com
-            </span>
-            <span class="text-slate-600">•</span>
-            <span class="flex items-center gap-1.5">
-              <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-              +63 939 123 7741
-            </span>
-          </div>
-
-          <div class="text-xs text-slate-500 mt-2 flex items-center gap-1">
-            <svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            Applied: 2026-10-19 09:12:44
-          </div>
-        </div>
-
-        <!-- ACTIONS -->
-        <div class="flex flex-row md:flex-col gap-2 justify-end">
-          <button type="button" onclick="handleAction(3, 'accept')" class="px-5 py-2 rounded-lg bg-amber-500 text-black font-bold hover:bg-amber-400 active:scale-95 transition shadow text-sm">
-            Accept
-          </button>
-          <button type="button" onclick="handleAction(3, 'reject')" class="px-5 py-2 rounded-lg bg-red-700 text-white font-semibold hover:bg-red-600 active:scale-95 transition shadow text-sm">
-            Reject
-          </button>
-          <a href="mailto:mark.bautista@example.com?subject=KreditCars%20Application%20Status" class="text-xs text-cyan-400 hover:underline text-center mt-1 py-1">
-            Email Applicant
-          </a>
-        </div>
-      </div>
-
-    </div>
-
   </main>
 
-  <!-- FOOTER -->
+  <!-- FOOTER (Identical to customer.html) -->
   <footer class="bg-black text-slate-500 py-12 border-t border-slate-900 mt-auto">
     <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-8 mb-8">
       <div class="md:col-span-2">
@@ -293,6 +343,7 @@
           <a href="index.html" class="hover:text-amber-400 transition">Inventory</a>
           <a href="staff.html" class="hover:text-amber-400 transition">Staff</a>
           <a href="customer.html" class="hover:text-amber-400 transition">Customers</a>
+          <a href="notify.html" class="hover:text-amber-400 transition">Notifications</a>
           <a href="dashboard.html" class="hover:text-amber-400 transition">Dashboard</a>
         </div>
       </div>
@@ -307,16 +358,54 @@
     </div>
   </footer>
 
+  <!-- CONFIRMATION POP-OUT MODAL -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0B1320] border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative transform transition-all animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Close 'X' button -->
+      <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold leading-none p-1">&times;</button>
+
+      <div class="flex items-start gap-4">
+        <!-- Icon container -->
+        <div id="modal-icon-container" class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-500/10 border border-red-500/30 text-red-500">
+          <svg id="modal-icon-danger" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <svg id="modal-icon-success" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+
+        <div class="flex-1 pr-2">
+          <h3 id="modal-title" class="text-lg font-bold text-white italic">Reject Application?</h3>
+          <p id="modal-message" class="text-sm text-slate-300 mt-2 leading-relaxed">
+            Reject and delete application for Cruz, Eduardo?
+          </p>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-800">
+        <button id="modal-cancel-btn" type="button" class="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold uppercase tracking-wider transition border border-slate-700">
+          Cancel
+        </button>
+        <button id="modal-confirm-btn" type="button" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg">
+          Yes, Reject
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- SCRIPT -->
   <script>
     // Mobile menu toggle
     const mobileBtn = document.getElementById('mobile-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    if (mobileBtn && mobileMenu) {
+    if (mobileBtn) {
       mobileBtn.addEventListener('click', function () {
+        const menu = document.getElementById('mobile-menu');
         const expanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', (!expanded).toString());
-        mobileMenu.classList.toggle('hidden');
+        if (menu) menu.classList.toggle('hidden');
       });
     }
 
@@ -328,8 +417,8 @@
       const isSuccess = type === 'success';
       flash.className = `rounded-xl border px-5 py-3 font-medium transition duration-300 flex items-center justify-between shadow-lg ${
         isSuccess
-          ? 'bg-emerald-900/40 border-emerald-600 text-emerald-300'
-          : 'bg-red-900/40 border-red-600 text-red-300'
+          ? 'bg-emerald-950/60 border-emerald-600/70 text-emerald-300'
+          : 'bg-red-950/60 border-red-600/70 text-red-300'
       }`;
       flash.innerHTML = `
         <div class="flex items-center gap-3">
@@ -338,7 +427,7 @@
               ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>' 
               : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'}
           </svg>
-          <span>${message}</span>
+          <span class="text-sm">${message}</span>
         </div>
         <button onclick="this.parentElement.classList.add('hidden')" class="text-slate-400 hover:text-white p-1" title="Close">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -348,58 +437,151 @@
       flash.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // Update pending count and empty state
-    function updateListState() {
-      const cards = document.querySelectorAll('.app-card');
-      const count = cards.length;
-      const badge = document.getElementById('pending-badge');
-      const emptyState = document.getElementById('empty-state');
+    // Custom Pop-Out Confirmation Modal Logic
+    let pendingConfirmAction = null;
 
-      if (badge) {
-        badge.textContent = `${count} Pending Application${count === 1 ? '' : 's'}`;
-        if (count === 0) {
-          badge.className = 'px-3 py-1 bg-slate-800 text-slate-400 border border-slate-700 rounded-full text-xs font-semibold';
-        }
+    function showConfirmModal(opts) {
+      const modal = document.getElementById('confirm-modal');
+      const title = document.getElementById('modal-title');
+      const msg = document.getElementById('modal-message');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+      const iconDanger = document.getElementById('modal-icon-danger');
+      const iconSuccess = document.getElementById('modal-icon-success');
+      const iconBox = document.getElementById('modal-icon-container');
+
+      if (!modal) return;
+
+      title.textContent = opts.title || 'Confirmation';
+      msg.innerHTML = opts.message || 'Are you sure you want to proceed?';
+      confirmBtn.textContent = opts.confirmText || 'Confirm';
+
+      if (opts.isDanger) {
+        confirmBtn.className = "px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg";
+        iconBox.className = "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-500/10 border border-red-500/30 text-red-500";
+        iconDanger.classList.remove('hidden');
+        iconSuccess.classList.add('hidden');
+      } else {
+        confirmBtn.className = "px-6 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-wider transition shadow-lg";
+        iconBox.className = "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-amber-500/10 border border-amber-500/30 text-amber-400";
+        iconDanger.classList.add('hidden');
+        iconSuccess.classList.remove('hidden');
       }
 
-      if (count === 0 && emptyState) {
-        emptyState.classList.remove('hidden');
+      pendingConfirmAction = opts.onConfirm;
+      modal.classList.remove('hidden');
+    }
+
+    function hideConfirmModal() {
+      const modal = document.getElementById('confirm-modal');
+      if (modal) modal.classList.add('hidden');
+      pendingConfirmAction = null;
+    }
+
+    const modalCancelBtn = document.getElementById('modal-cancel-btn');
+    const modalCloseX = document.getElementById('modal-close-x');
+    const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+    const confirmModal = document.getElementById('confirm-modal');
+
+    if (modalCancelBtn) modalCancelBtn.addEventListener('click', hideConfirmModal);
+    if (modalCloseX) modalCloseX.addEventListener('click', hideConfirmModal);
+    if (confirmModal) {
+      confirmModal.addEventListener('click', function(e) {
+        if (e.target === confirmModal) hideConfirmModal();
+      });
+    }
+    if (modalConfirmBtn) {
+      modalConfirmBtn.addEventListener('click', function() {
+        if (typeof pendingConfirmAction === 'function') {
+          pendingConfirmAction();
+        }
+        hideConfirmModal();
+      });
+    }
+
+    // Update pending count and empty state
+    function updateListState() {
+      const rows = document.querySelectorAll('.app-row');
+      const count = rows.length;
+      const badgeText = document.getElementById('pending-badge-text');
+      const emptyState = document.getElementById('empty-state');
+      const tableWrapper = document.getElementById('table-wrapper');
+
+      if (badgeText) {
+        badgeText.textContent = `${count} Pending Application${count === 1 ? '' : 's'}`;
+      }
+
+      if (count === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        if (tableWrapper) tableWrapper.classList.add('hidden');
+      } else {
+        if (emptyState) emptyState.classList.add('hidden');
+        if (tableWrapper) tableWrapper.classList.remove('hidden');
       }
     }
 
-    // Accept / Reject actions
+    // Accept / Reject actions with pop-out modal
     function handleAction(appId, action) {
-      const card = document.querySelector(`.app-card[data-id="${appId}"]`);
-      const name = card ? card.getAttribute('data-name') : 'Applicant';
+      const row = document.querySelector(`.app-row[data-id="${appId}"]`);
+      const name = row ? row.getAttribute('data-name') : 'Applicant';
 
-      if (action === 'accept') {
-        if (!confirm(`Accept this applicant (${name}) and add to staff?`)) return;
-
-        // Card removal animation
-        if (card) {
-          card.style.transition = 'all 0.3s ease';
-          card.style.opacity = '0';
-          card.style.transform = 'scale(0.95)';
-          setTimeout(() => {
-            card.remove();
-            updateListState();
-          }, 300);
-        }
-        showFlash('success', `Application for ${name} accepted and staff added.`);
-      } else if (action === 'reject') {
-        if (!confirm(`Reject and delete application for ${name}?`)) return;
-
-        if (card) {
-          card.style.transition = 'all 0.3s ease';
-          card.style.opacity = '0';
-          card.style.transform = 'scale(0.95)';
-          setTimeout(() => {
-            card.remove();
-            updateListState();
-          }, 300);
-        }
-        showFlash('success', `Application for ${name} rejected and removed.`);
+      if (action === 'reject') {
+        showConfirmModal({
+          title: 'Reject Application',
+          message: `Reject and delete application for <span class="font-bold text-white">${name}</span>? This action cannot be undone.`,
+          confirmText: 'Yes, Reject',
+          isDanger: true,
+          onConfirm: function() {
+            if (row) {
+              row.style.transition = 'all 0.3s ease';
+              row.style.opacity = '0';
+              setTimeout(() => {
+                row.remove();
+                updateListState();
+              }, 300);
+            }
+            showFlash('success', `Application for ${name} rejected and removed.`);
+          }
+        });
+      } else if (action === 'accept') {
+        showConfirmModal({
+          title: 'Accept Applicant',
+          message: `Accept <span class="font-bold text-white">${name}</span> and add to the active staff roster?`,
+          confirmText: 'Yes, Accept',
+          isDanger: false,
+          onConfirm: function() {
+            if (row) {
+              row.style.transition = 'all 0.3s ease';
+              row.style.opacity = '0';
+              setTimeout(() => {
+                row.remove();
+                updateListState();
+              }, 300);
+            }
+            showFlash('success', `Application for ${name} accepted and added to staff roster.`);
+          }
+        });
       }
+    }
+
+    // Quick requests accept in sidebar with pop-out modal
+    function acceptRequest(reqId, name) {
+      showConfirmModal({
+        title: 'Approve Request',
+        message: `Accept inquiry request from <span class="font-bold text-white">${name}</span> and add to customer records?`,
+        confirmText: 'Yes, Approve',
+        isDanger: false,
+        onConfirm: function() {
+          const elem = document.getElementById(reqId);
+          if (elem) {
+            elem.style.transition = 'all 0.3s ease';
+            elem.style.opacity = '0';
+            setTimeout(() => {
+              elem.remove();
+            }, 300);
+          }
+          showFlash('success', `Request from ${name} approved and customer record created.`);
+        }
+      });
     }
   </script>
 </body>

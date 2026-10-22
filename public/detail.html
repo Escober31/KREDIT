@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>KreditCars — Vehicle Details</title>
+  <meta name="description" content="KreditCars — quality pre-owned vehicle details and financing specifications" />
+  <link rel="icon" href="images/KREDITCARS.png" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root { --nav-h-mobile: 4rem; --nav-h-md: 5rem; }
+    @media (min-width: 768px) { :root { --nav-h: var(--nav-h-md); } }
+    @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
+    main { padding-top: calc(var(--nav-h) + 1rem); }
+  </style>
+</head>
+<body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
+
+  <!-- NAV (Identical to index.html) -->
+  <nav class="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 bg-[#07101a]/60 backdrop-blur-lg border-b border-slate-800 shadow-sm">
+    <div class="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3">
+        <svg viewBox="0 0 100 100" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KreditCars logo">
+          <defs>
+            <clipPath id="hexClipLogoDetail"><polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" /></clipPath>
+          </defs>
+          <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" fill="none" stroke="#f59e0b" stroke-width="6" stroke-linejoin="round" />
+          <image href="images/KREDITCARS.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" clip-path="url(#hexClipLogoDetail)" />
+        </svg>
+
+        <div class="leading-tight">
+          <div class="text-xl font-black tracking-wider italic">Kredit<span class="text-amber-500">Cars</span></div>
+          <div class="text-xs text-cyan-400 uppercase tracking-widest">Trusted Pre-Owned Vehicles</div>
+        </div>
+      </a>
+
+      <div class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="uppercase text-sm text-amber-500 font-bold hover:text-white transition">Inventory</a>
+        <a href="staff.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Staff</a>
+        <a href="customer.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Customers</a>
+        <a href="notify.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Notify</a>
+        <a href="admin_create_user.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Register</a>
+        <a href="activity.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Activity</a>
+        <a href="dashboard.html" class="bg-amber-500 px-5 py-2 text-black font-bold uppercase transform -skew-x-6 hover:-translate-y-0.5 transition">
+          <span class="inline-block skew-x-6">DashBoard</span>
+        </a>
+      </div>
+
+      <button id="mobile-btn" aria-expanded="false" class="md:hidden text-white" aria-label="Toggle navigation">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+
+    <div id="mobile-menu" class="hidden md:hidden bg-[#07101a]/95 backdrop-blur-md border-t border-slate-800">
+      <div class="px-6 py-4 flex flex-col gap-3">
+        <a href="index.html" class="text-amber-500 font-bold py-1">Inventory</a>
+        <a href="staff.html" class="text-slate-200 hover:text-amber-500 py-1">Staff</a>
+        <a href="customer.html" class="text-slate-200 hover:text-amber-500 py-1">Customers</a>
+        <a href="notify.html" class="text-slate-200 hover:text-amber-500 py-1">Notify</a>
+        <a href="admin_create_user.html" class="text-slate-200 hover:text-amber-500 py-1">Register</a>
+        <a href="activity.html" class="text-slate-200 hover:text-amber-500 py-1">Activity</a>
+        <a href="dashboard.html" class="mt-2 inline-block bg-amber-500 text-black text-center px-4 py-2 uppercase font-bold">DashBoard</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTAINER (Matching index.html structure) -->
+  <main class="pt-24 max-w-7xl mx-auto px-6 pb-20 w-full flex-1">
+    <div class="bg-[#07101a]/60 border border-slate-800 rounded-xl p-4 md:p-6 shadow-xl">
+
+      <!-- Header row: Title + Actions (Matching index.html) -->
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
+        <div>
+          <h1 class="text-2xl md:text-3xl font-bold text-white italic">Vehicle <span class="text-amber-500">Details</span></h1>
+          <p class="text-sm text-slate-400 mt-1">Detailed specifications, financing schedule, and purchase inquiries</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+          <!-- Switcher dropdown styled like index.html inputs -->
+          <div class="flex items-center gap-2">
+            <label for="vehicle-selector" class="text-xs text-slate-400 uppercase font-mono hidden sm:inline">Select Vehicle:</label>
+            <select id="vehicle-selector" class="bg-slate-900 border border-slate-700 text-white text-xs font-semibold px-3 py-2 rounded focus:outline-none focus:border-amber-500">
+              <option value="1">1. Toyota Vios 1.5 G</option>
+              <option value="2">2. Mitsubishi Montero Sport</option>
+              <option value="3">3. Ford Ranger Wildtrak</option>
+            </select>
+          </div>
+
+          <button id="inquire-btn" class="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-sm shadow">
+            <span class="inline-block skew-x-6">Inquire Now</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Vehicle Detail Grid -->
+      <div class="grid lg:grid-cols-12 gap-8 items-start">
+
+        <!-- LEFT COLUMN: Image Showcase Card (Styled identically to index.html Car Cards) -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="group bg-[#0B1320] border border-slate-800 rounded-xl overflow-hidden flex flex-col shadow-lg">
+            
+            <!-- Car Image Area with index.html placeholder gradient & styling -->
+            <div class="relative h-64 md:h-80 bg-slate-900 flex items-center justify-center border-b border-slate-800 overflow-hidden">
+              <div id="image-placeholder" class="absolute inset-0 bg-gradient-to-t from-[#0B1320] to-slate-900/50 flex flex-col items-center justify-center">
+                <svg class="w-20 h-20 text-slate-700 group-hover:text-amber-500/70 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <span class="text-[10px] text-slate-500 font-mono tracking-widest mt-2 uppercase">Official Inventory Unit</span>
+              </div>
+
+              <!-- Vehicle photo if available -->
+              <img id="vehicle-photo" src="" alt="Vehicle Image" class="hidden w-full h-full object-cover relative z-10" />
+
+              <!-- Condition Tag in top left (Identical to index.html) -->
+              <div id="condition-tag" class="absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-amber-500 z-20">
+                Second Hand
+              </div>
+
+              <!-- Status Tag in top right -->
+              <div class="absolute top-3 right-3 bg-slate-900/90 border border-slate-700 text-green-400 text-[11px] font-semibold px-2.5 py-1 uppercase rounded flex items-center gap-1.5 z-20">
+                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                Available
+              </div>
+            </div>
+
+            <!-- Card Bottom Bar: Quick Highlights -->
+            <div class="p-4 bg-[#0B1320] flex items-center justify-between text-xs text-slate-400 font-mono">
+              <span id="card-stock-label" class="text-amber-500 font-bold">2 Units Available</span>
+              <span>Stock ID: #KC-<span id="vehicle-stock-id">001</span></span>
+            </div>
+          </div>
+
+          <!-- Trust Badges (Matching index/customer aesthetic) -->
+          <div class="bg-[#0B1320] border border-slate-800 rounded-xl p-4 text-xs space-y-2 text-slate-300">
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-2"><span>🛡️</span> 100% Non-Flooded Guarantee</span>
+              <span class="text-green-400 font-bold">Verified</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-2"><span>📑</span> LTO Original OR/CR Verified</span>
+              <span class="text-green-400 font-bold">Clear Papers</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="flex items-center gap-2"><span>🔍</span> 160-Point Mechanical Inspection</span>
+              <span class="text-cyan-400 font-bold">Passed</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT COLUMN: Specifications & Financing (Matching index.html style) -->
+        <div class="lg:col-span-7 space-y-5">
+
+          <!-- Title & Price Block -->
+          <div class="bg-[#0B1320] border border-slate-800 rounded-xl p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+              <h2 id="car-title" class="text-2xl md:text-3xl font-bold text-white italic">
+                Toyota Vios 1.5 G
+              </h2>
+              <span id="car-price" class="text-2xl md:text-3xl font-bold text-cyan-400">
+                ₱650,000
+              </span>
+            </div>
+
+            <div class="flex flex-wrap gap-4 text-xs text-slate-400 font-mono uppercase">
+              <span id="car-mileage">35,000 mi</span>
+              <span>•</span>
+              <span id="car-year">2021</span>
+              <span>•</span>
+              <span id="car-condition-text">Second Hand</span>
+            </div>
+          </div>
+
+          <!-- 4-Metric Grid (Matching index.html card design) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs uppercase font-mono">
+            <div class="bg-[#0B1320] p-3.5 border border-slate-800 rounded-lg">
+              <p class="text-slate-500">Year</p>
+              <p id="metric-year" class="font-bold text-white text-sm mt-0.5">2021</p>
+            </div>
+            <div class="bg-[#0B1320] p-3.5 border border-slate-800 rounded-lg">
+              <p class="text-slate-500">Condition</p>
+              <p id="metric-condition" class="font-bold text-white text-sm mt-0.5">Second Hand</p>
+            </div>
+            <div class="bg-[#0B1320] p-3.5 border border-slate-800 rounded-lg">
+              <p class="text-slate-500">Mileage</p>
+              <p id="metric-mileage" class="font-bold text-white text-sm mt-0.5">35,000 mi</p>
+            </div>
+            <div class="bg-[#0B1320] p-3.5 border border-slate-800 rounded-lg">
+              <p class="text-slate-500">Status</p>
+              <p class="font-bold text-green-400 text-sm mt-0.5">Available</p>
+            </div>
+          </div>
+
+          <!-- Vehicle Details Panel (Styled like add-form in index.html) -->
+          <div class="bg-[#0B1320] border border-slate-800 p-5 md:p-6 rounded-xl space-y-4">
+            <h3 class="text-lg font-bold text-white italic border-l-4 border-amber-500 pl-3">
+              Vehicle <span class="text-amber-500">Details</span>
+            </h3>
+
+            <!-- Downpayment & Stock banner -->
+            <div class="grid sm:grid-cols-2 gap-3 text-sm">
+              <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+                <span class="text-slate-400 text-xs block">Downpayment (ALL IN):</span>
+                <span id="car-downpayment" class="font-bold text-amber-500 text-base">₱65,000</span>
+              </div>
+              <div class="bg-slate-900/80 p-3 rounded-lg border border-slate-800">
+                <span class="text-slate-400 text-xs block">Stock Available:</span>
+                <span id="car-stock" class="font-bold text-slate-200 text-base">2 Unit(s)</span>
+              </div>
+            </div>
+
+            <!-- Specs Grid -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm pt-2">
+              <div>
+                <span class="text-slate-500 text-xs block">Fuel Type:</span>
+                <span id="car-fuel" class="font-semibold text-slate-200">Gasoline</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-xs block">Engine:</span>
+                <span id="car-engine" class="font-semibold text-slate-200">1.5L Dual VVT-i</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-xs block">Transmission:</span>
+                <span id="car-transmission" class="font-semibold text-slate-200">Automatic</span>
+              </div>
+              <div>
+                <span class="text-slate-500 text-xs block">Year Model:</span>
+                <span id="car-year-model" class="font-semibold text-slate-200">2021</span>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="pt-2">
+              <span class="text-slate-500 text-xs uppercase font-mono block mb-1">Description:</span>
+              <p id="car-description" class="whitespace-pre-line text-slate-300 text-sm leading-relaxed bg-slate-900/60 p-4 rounded-lg border border-slate-800">
+                Pristine condition Toyota Vios 1.5 G. Well-maintained by first owner, complete service records from authorized dealership, cold air-conditioning, keyless entry, push-start ignition, and clean interior. No history of collision or flooding.
+              </p>
+            </div>
+
+            <!-- Financing Terms -->
+            <div class="pt-2 border-t border-slate-800">
+              <span class="text-slate-400 text-xs uppercase font-mono block mb-2">Flexible Financing Plans:</span>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+                <div class="bg-slate-900 p-3 border border-slate-800 rounded text-center">
+                  <p class="text-slate-500 text-xs">36 Months</p>
+                  <p id="finance-36" class="font-bold text-cyan-400 mt-1">₱21,450 / mo</p>
+                </div>
+                <div class="bg-slate-900 p-3 border border-slate-800 rounded text-center">
+                  <p class="text-slate-500 text-xs">48 Months</p>
+                  <p id="finance-48" class="font-bold text-cyan-400 mt-1">₱17,200 / mo</p>
+                </div>
+                <div class="bg-slate-900 p-3 border border-slate-800 rounded text-center">
+                  <p class="text-slate-500 text-xs">60 Months</p>
+                  <p id="finance-60" class="font-bold text-cyan-400 mt-1">₱14,800 / mo</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Location -->
+            <div class="pt-2 flex items-center justify-between text-sm">
+              <p class="text-cyan-400 font-bold flex items-center gap-1.5">
+                <span>📍</span>
+                <span id="car-location">Olongapo City Showroom</span>
+              </p>
+              <span class="text-xs text-slate-500">Subic / Zambales Delivery Available</span>
+            </div>
+
+          </div>
+
+          <!-- Bottom Actions (Matching index.html button styling) -->
+          <div class="flex flex-wrap items-center gap-3 pt-2">
+            <button id="inquire-btn-bottom" class="bg-amber-500 hover:bg-amber-400 text-black px-8 py-3 rounded-lg font-bold text-sm uppercase tracking-wider transition shadow">
+              Inquire Now
+            </button>
+            <a href="index.html" class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-3 rounded-lg font-bold text-sm uppercase tracking-wider transition border border-slate-700">
+              Back to Inventory
+            </a>
+            <button id="copy-link-btn" class="bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white px-4 py-3 rounded-lg text-sm transition border border-slate-700 flex items-center gap-2">
+              <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <span>Copy Link</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <!-- INQUIRY MODAL (Matching index.html & customer.html modal style) -->
+  <div id="inquiry-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0B1320] border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative">
+      <button id="close-modal" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold">&times;</button>
+
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-white italic">Inquire About <span class="text-amber-500">Vehicle</span></h3>
+        <p class="text-sm text-cyan-400 font-semibold" id="modal-car-name">Toyota Vios 1.5 G</p>
+      </div>
+
+      <form id="inquiry-modal-form" class="space-y-4">
+        <div>
+          <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Full Name</label>
+          <input type="text" required placeholder="Your Full Name" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Contact Phone</label>
+            <input type="tel" required placeholder="0917-000-0000" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Email</label>
+            <input type="email" required placeholder="you@email.com" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Payment / Financing Preference</label>
+          <select class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+            <option>Cash Payment (Full)</option>
+            <option>Financing - 36 Months Term</option>
+            <option>Financing - 48 Months Term</option>
+            <option>Financing - 60 Months Term</option>
+            <option>Vehicle Trade-In Assessment</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Questions or Message</label>
+          <textarea rows="3" placeholder="Tell us if you want to book a viewing or test drive..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold uppercase py-2.5 rounded-lg text-sm transition">
+          Submit Inquiry
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 bg-[#0B1320] border border-amber-500 text-white px-5 py-3 rounded-lg shadow-xl z-50 text-sm flex items-center gap-2">
+    <span class="text-amber-400 font-bold">✓</span>
+    <span id="toast-text">Success!</span>
+  </div>
+
+  <!-- FOOTER (Identical to index.html) -->
+  <footer class="bg-black text-slate-500 py-12 border-t border-slate-900 mt-auto">
+    <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-8 mb-8">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <svg class="w-6 h-6 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+          </svg>
+          <div class="text-xl font-bold text-white">Kredit<span class="text-amber-500">Cars</span></div>
+        </div>
+
+        <p class="max-w-xs mb-4 text-sm text-slate-400">KreditCars — quality pre-owned vehicles in Olongapo City. Honest service and tailored financing to help you drive away happy.</p>
+
+        <div class="flex gap-3">
+          <a href="#" class="w-10 h-10 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-600 transition text-sm font-semibold">F</a>
+          <a href="#" class="w-10 h-10 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-600 transition text-sm font-semibold">I</a>
+          <a href="#" class="w-10 h-10 border border-slate-800 flex items-center justify-center hover:text-white hover:border-slate-600 transition text-sm font-semibold">M</a>
+        </div>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase mb-3 text-sm tracking-wider">Office</h4>
+        <p class="text-sm">Olongapo City, Philippines</p>
+        <p class="mt-3 text-amber-500 text-sm font-medium">Mon - Fri: 9:00 AM - 6:00 PM</p>
+      </div>
+
+      <div>
+        <h4 class="text-white font-bold uppercase mb-3 text-sm tracking-wider">Quick Links</h4>
+        <div class="flex flex-col space-y-2 text-sm">
+          <a href="index.html" class="hover:text-amber-400 transition">Inventory</a>
+          <a href="staff.html" class="hover:text-amber-400 transition">Staff</a>
+          <a href="customer.html" class="hover:text-amber-400 transition">Customers</a>
+          <a href="notify.html" class="hover:text-amber-400 transition">Notifications</a>
+          <a href="dashboard.html" class="hover:text-amber-400 transition">Dashboard</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm pt-4 border-t border-slate-900/60">
+      <p>© 2026 KreditCars. All rights reserved.</p>
+      <div class="flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+        <span class="text-green-500 font-bold uppercase text-xs">System Online</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    // Vehicles dataset matching index.html
+    const carsData = {
+      1: {
+        id: 1,
+        make: "Toyota",
+        model: "Vios 1.5 G",
+        year: "2021",
+        condition: "Second Hand",
+        mileage: "35,000 mi",
+        price: 650000,
+        downpayment: 65000,
+        stock: 2,
+        fuel_type: "Gasoline",
+        engine: "1.5L Dual VVT-i",
+        transmission: "Automatic",
+        location: "Olongapo City Showroom",
+        description: "Pristine condition Toyota Vios 1.5 G. Well-maintained by first owner, complete service records from authorized dealership, cold air-conditioning, keyless entry, push-start ignition, and clean interior. No history of collision or flooding.",
+        finance_36: "₱21,450 / mo",
+        finance_48: "₱17,200 / mo",
+        finance_60: "₱14,800 / mo",
+        photo: ""
+      },
+      2: {
+        id: 2,
+        make: "Mitsubishi",
+        model: "Montero Sport",
+        year: "2020",
+        condition: "Second Hand",
+        mileage: "42,000 mi",
+        price: 1180000,
+        downpayment: 118000,
+        stock: 1,
+        fuel_type: "Diesel",
+        engine: "2.4L MIVEC Turbo",
+        transmission: "8-Speed Automatic",
+        location: "Subic Bay Freeport Zone",
+        description: "Reliable and spacious 7-seater SUV. Equipped with touchscreen infotainment, reverse camera, leather seating, dual climate control, cruise control, and superb diesel fuel efficiency. 100% accident & flood free.",
+        finance_36: "₱38,940 / mo",
+        finance_48: "₱31,270 / mo",
+        finance_60: "₱26,900 / mo",
+        photo: ""
+      },
+      3: {
+        id: 3,
+        make: "Ford",
+        model: "Ranger Wildtrak",
+        year: "2023",
+        condition: "New",
+        mileage: "12,000 mi",
+        price: 1450000,
+        downpayment: 145000,
+        stock: 3,
+        fuel_type: "Diesel",
+        engine: "2.0L Bi-Turbo",
+        transmission: "10-Speed Automatic",
+        location: "Olongapo City Showroom",
+        description: "Top-of-the-line pickup truck featuring Ford SYNC 4A with 12\" portrait touchscreen, wireless Apple CarPlay & Android Auto, 360-degree camera, advanced driver assist systems, and bedliner with power roller shutter.",
+        finance_36: "₱47,850 / mo",
+        finance_48: "₱38,425 / mo",
+        finance_60: "₱33,060 / mo",
+        photo: ""
+      }
+    };
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastText = document.getElementById('toast-text');
+      if (toast && toastText) {
+        toastText.textContent = msg;
+        toast.classList.remove('hidden');
+        setTimeout(() => toast.classList.add('hidden'), 3500);
+      }
+    }
+
+    function getParamId() {
+      const params = new URLSearchParams(window.location.search);
+      const id = parseInt(params.get('id'), 10);
+      return (id && carsData[id]) ? id : 1;
+    }
+
+    function renderCar(id) {
+      const car = carsData[id] || carsData[1];
+      const fullName = `${car.make} ${car.model}`;
+
+      document.title = `${fullName} — KreditCars`;
+      const breadcrumbCar = document.getElementById('breadcrumb-car');
+      if (breadcrumbCar) breadcrumbCar.textContent = fullName;
+      document.getElementById('vehicle-stock-id').textContent = String(car.id).padStart(3, '0');
+      document.getElementById('card-stock-label').textContent = `${car.stock} Unit(s) Available`;
+
+      document.getElementById('car-title').textContent = fullName;
+      document.getElementById('car-price').textContent = `₱${Number(car.price).toLocaleString()}`;
+      document.getElementById('car-mileage').textContent = car.mileage;
+      document.getElementById('car-year').textContent = car.year;
+      document.getElementById('car-condition-text').textContent = car.condition;
+
+      // Condition badge styling
+      const conditionTag = document.getElementById('condition-tag');
+      conditionTag.textContent = car.condition;
+      if (car.condition === 'New') {
+        conditionTag.className = "absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-emerald-500 z-20";
+      } else {
+        conditionTag.className = "absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-amber-500 z-20";
+      }
+
+      // 4 Metric cards
+      document.getElementById('metric-year').textContent = car.year;
+      document.getElementById('metric-condition').textContent = car.condition;
+      document.getElementById('metric-mileage').textContent = car.mileage;
+
+      // Detail specs
+      document.getElementById('car-downpayment').textContent = `₱${Number(car.downpayment).toLocaleString()} (ALL IN)`;
+      document.getElementById('car-stock').textContent = `${car.stock} Unit(s)`;
+      document.getElementById('car-fuel').textContent = car.fuel_type;
+      document.getElementById('car-engine').textContent = car.engine;
+      document.getElementById('car-transmission').textContent = car.transmission;
+      document.getElementById('car-year-model').textContent = car.year;
+      document.getElementById('car-description').textContent = car.description;
+
+      document.getElementById('finance-36').textContent = car.finance_36;
+      document.getElementById('finance-48').textContent = car.finance_48;
+      document.getElementById('finance-60').textContent = car.finance_60;
+      document.getElementById('car-location').textContent = car.location;
+
+      // Photo
+      const photoImg = document.getElementById('vehicle-photo');
+      const placeholder = document.getElementById('image-placeholder');
+      if (car.photo && car.photo.trim() !== '') {
+        photoImg.src = car.photo;
+        photoImg.classList.remove('hidden');
+        placeholder.classList.add('hidden');
+      } else {
+        photoImg.classList.add('hidden');
+        placeholder.classList.remove('hidden');
+      }
+
+      // Modal title
+      const modalCar = document.getElementById('modal-car-name');
+      if (modalCar) modalCar.textContent = `${fullName} (${car.year})`;
+
+      // Dropdown sync
+      const selector = document.getElementById('vehicle-selector');
+      if (selector) selector.value = car.id;
+    }
+
+    // Initialize
+    const initialId = getParamId();
+    renderCar(initialId);
+
+    // Selector change
+    const selector = document.getElementById('vehicle-selector');
+    if (selector) {
+      selector.addEventListener('change', function() {
+        const selectedId = parseInt(this.value, 10);
+        const url = new URL(window.location);
+        url.searchParams.set('id', selectedId);
+        window.history.pushState({}, '', url);
+        renderCar(selectedId);
+      });
+    }
+
+    // Mobile nav toggle
+    const mobileBtn = document.getElementById('mobile-btn');
+    if (mobileBtn) {
+      mobileBtn.addEventListener('click', function() {
+        const menu = document.getElementById('mobile-menu');
+        const expanded = this.getAttribute('aria-expanded') === 'true';
+        this.setAttribute('aria-expanded', (!expanded).toString());
+        if (menu) menu.classList.toggle('hidden');
+      });
+    }
+
+    // Modal triggers
+    const inquireBtn = document.getElementById('inquire-btn');
+    const inquireBtnBottom = document.getElementById('inquire-btn-bottom');
+    const modal = document.getElementById('inquiry-modal');
+    const closeModal = document.getElementById('close-modal');
+    const inquiryForm = document.getElementById('inquiry-modal-form');
+
+    function openModal() { if (modal) modal.classList.remove('hidden'); }
+    function hideModal() { if (modal) modal.classList.add('hidden'); }
+
+    if (inquireBtn) inquireBtn.addEventListener('click', openModal);
+    if (inquireBtnBottom) inquireBtnBottom.addEventListener('click', openModal);
+    if (closeModal) closeModal.addEventListener('click', hideModal);
+    if (modal) {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) hideModal();
+      });
+    }
+
+    if (inquiryForm) {
+      inquiryForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        hideModal();
+        showToast("Inquiry submitted successfully! A representative will contact you.");
+        inquiryForm.reset();
+      });
+    }
+
+    // Copy link
+    const copyBtn = document.getElementById('copy-link-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(window.location.href);
+          showToast("Link copied to clipboard!");
+        } else {
+          showToast(window.location.href);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

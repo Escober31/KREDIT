@@ -78,20 +78,26 @@
         <div class="flex items-center gap-3">
           <span class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-full text-xs font-semibold">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            4 Active Customers
+            <span id="active-count-text">4 Active Customers</span>
           </span>
         </div>
       </div>
+
+      <!-- FLASH MESSAGE CONTAINER -->
+      <div id="flash-container" class="hidden mb-6"></div>
 
       <div class="md:flex md:gap-6">
         <!-- LEFT: compact notifications (small column) -->
         <aside class="w-full md:w-1/4">
           <div class="bg-black/40 border border-slate-800 rounded-xl p-4 shadow-md">
-            <h2 class="text-sm font-semibold text-white mb-3">Notifications</h2>
+            <div class="flex items-center justify-between mb-3">
+              <h2 class="text-sm font-semibold text-white">Notifications</h2>
+              <span class="text-[10px] text-amber-500 font-mono font-bold uppercase tracking-wider">Live</span>
+            </div>
 
-            <div class="space-y-3">
+            <div class="space-y-3" id="requests-list">
               <!-- Request 1 -->
-              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow">
+              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition" id="req-1">
                 <div class="flex items-start justify-between gap-2">
                   <div class="flex-1">
                     <div class="uppercase text-[10px] text-slate-400 font-semibold tracking-wider">Requested</div>
@@ -100,17 +106,14 @@
                     <div class="text-[11px] text-slate-500 mt-1">2026-10-20 14:22</div>
                   </div>
 
-                  <form method="post" class="flex-shrink-0" onsubmit="return confirm('Accept this request and add to customers?');">
-                    <input type="hidden" name="request_id" value="1">
-                    <button name="accept_request" type="submit" class="bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
-                      <span class="inline-block skew-x-6">Accept</span>
-                    </button>
-                  </form>
+                  <button type="button" onclick="acceptCustomerRequest('req-1', 'Juan', 'Garcia', '+63 915 889 1234', '36 Months Financing')" class="flex-shrink-0 bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
+                    <span class="inline-block skew-x-6">Accept</span>
+                  </button>
                 </div>
               </div>
 
               <!-- Request 2 -->
-              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow">
+              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition" id="req-2">
                 <div class="flex items-start justify-between gap-2">
                   <div class="flex-1">
                     <div class="uppercase text-[10px] text-slate-400 font-semibold tracking-wider">Requested</div>
@@ -119,12 +122,9 @@
                     <div class="text-[11px] text-slate-500 mt-1">2026-10-21 09:15</div>
                   </div>
 
-                  <form method="post" class="flex-shrink-0" onsubmit="return confirm('Accept this request and add to customers?');">
-                    <input type="hidden" name="request_id" value="2">
-                    <button name="accept_request" type="submit" class="bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
-                      <span class="inline-block skew-x-6">Accept</span>
-                    </button>
-                  </form>
+                  <button type="button" onclick="acceptCustomerRequest('req-2', 'Elena', 'Rodriguez', '+63 922 456 7890', 'Trade-in Assessment')" class="flex-shrink-0 bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
+                    <span class="inline-block skew-x-6">Accept</span>
+                  </button>
                 </div>
               </div>
             </div>
@@ -139,10 +139,10 @@
               <h2 class="text-sm font-semibold text-white">Customers</h2>
 
               <!-- compact delete form -->
-              <form method="post" class="flex items-center gap-2" onsubmit="return confirm('Delete this customer?');">
-                <input type="number" name="delete_id" placeholder="ID" required
+              <form id="delete-form" class="flex items-center gap-2">
+                <input type="number" id="delete_id_input" placeholder="ID" required
                        class="w-20 bg-[#0E1621] border border-slate-700 px-2.5 py-1 text-white text-sm rounded-lg focus:outline-none focus:border-amber-500" />
-                <button name="delete_customer" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-xs font-bold rounded-lg transition shadow">Delete</button>
+                <button type="submit" class="bg-red-600 hover:bg-red-500 text-white px-3 py-1 text-xs font-bold rounded-lg transition shadow">Delete</button>
               </form>
             </div>
 
@@ -155,36 +155,57 @@
                     <th class="px-4 py-3">Last Name</th>
                     <th class="px-4 py-3">Phone</th>
                     <th class="px-4 py-3">Option</th>
+                    <th class="px-4 py-3 text-center">Action</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-800/80">
-                  <tr class="hover:bg-slate-800/30 transition">
+                <tbody id="customers-table-body" class="divide-y divide-slate-800/80">
+                  <tr class="customer-row hover:bg-slate-800/30 transition" data-id="101" data-name="Carlos Mendoza">
                     <td class="px-4 py-3 align-middle text-slate-400 font-mono">101</td>
                     <td class="px-4 py-3 align-middle font-medium text-white">Carlos</td>
                     <td class="px-4 py-3 align-middle text-slate-300">Mendoza</td>
                     <td class="px-4 py-3 align-middle text-slate-400">+63 917 111 2233</td>
                     <td class="px-4 py-3 align-middle text-cyan-400">Direct Purchase</td>
+                    <td class="px-4 py-3 align-middle text-center">
+                      <button type="button" onclick="confirmDeleteCustomer(101, 'Carlos Mendoza')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
+                        Delete
+                      </button>
+                    </td>
                   </tr>
-                  <tr class="hover:bg-slate-800/30 transition">
+                  <tr class="customer-row hover:bg-slate-800/30 transition" data-id="102" data-name="Angelica Ramos">
                     <td class="px-4 py-3 align-middle text-slate-400 font-mono">102</td>
                     <td class="px-4 py-3 align-middle font-medium text-white">Angelica</td>
                     <td class="px-4 py-3 align-middle text-slate-300">Ramos</td>
                     <td class="px-4 py-3 align-middle text-slate-400">+63 928 222 3344</td>
                     <td class="px-4 py-3 align-middle text-cyan-400">48 Months Financing</td>
+                    <td class="px-4 py-3 align-middle text-center">
+                      <button type="button" onclick="confirmDeleteCustomer(102, 'Angelica Ramos')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
+                        Delete
+                      </button>
+                    </td>
                   </tr>
-                  <tr class="hover:bg-slate-800/30 transition">
+                  <tr class="customer-row hover:bg-slate-800/30 transition" data-id="103" data-name="Michael Tan">
                     <td class="px-4 py-3 align-middle text-slate-400 font-mono">103</td>
                     <td class="px-4 py-3 align-middle font-medium text-white">Michael</td>
                     <td class="px-4 py-3 align-middle text-slate-300">Tan</td>
                     <td class="px-4 py-3 align-middle text-slate-400">+63 919 333 4455</td>
                     <td class="px-4 py-3 align-middle text-cyan-400">Consignment</td>
+                    <td class="px-4 py-3 align-middle text-center">
+                      <button type="button" onclick="confirmDeleteCustomer(103, 'Michael Tan')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
+                        Delete
+                      </button>
+                    </td>
                   </tr>
-                  <tr class="hover:bg-slate-800/30 transition">
+                  <tr class="customer-row hover:bg-slate-800/30 transition" data-id="104" data-name="Patricia Bautista">
                     <td class="px-4 py-3 align-middle text-slate-400 font-mono">104</td>
                     <td class="px-4 py-3 align-middle font-medium text-white">Patricia</td>
                     <td class="px-4 py-3 align-middle text-slate-300">Bautista</td>
                     <td class="px-4 py-3 align-middle text-slate-400">+63 927 444 5566</td>
                     <td class="px-4 py-3 align-middle text-cyan-400">36 Months Financing</td>
+                    <td class="px-4 py-3 align-middle text-center">
+                      <button type="button" onclick="confirmDeleteCustomer(104, 'Patricia Bautista')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -195,6 +216,44 @@
 
     </div>
   </main>
+
+  <!-- CONFIRMATION POP-OUT MODAL -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0B1320] border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative transform transition-all animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Close 'X' button -->
+      <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold leading-none p-1">&times;</button>
+
+      <div class="flex items-start gap-4">
+        <!-- Icon container -->
+        <div id="modal-icon-container" class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-500/10 border border-red-500/30 text-red-500">
+          <svg id="modal-icon-danger" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <svg id="modal-icon-success" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+
+        <div class="flex-1 pr-2">
+          <h3 id="modal-title" class="text-lg font-bold text-white italic">Confirm Action</h3>
+          <p id="modal-message" class="text-sm text-slate-300 mt-2 leading-relaxed">
+            Are you sure you want to proceed?
+          </p>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-800">
+        <button id="modal-cancel-btn" type="button" class="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold uppercase tracking-wider transition border border-slate-700">
+          Cancel
+        </button>
+        <button id="modal-confirm-btn" type="button" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- FOOTER -->
   <footer class="bg-black text-slate-500 py-12 border-t border-slate-900 mt-auto">
@@ -252,6 +311,195 @@
         const expanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', (!expanded).toString());
         if (menu) menu.classList.toggle('hidden');
+      });
+    }
+
+    // Flash message helper
+    function showFlash(type, message) {
+      const flash = document.getElementById('flash-container');
+      if (!flash) return;
+
+      const isSuccess = type === 'success';
+      flash.className = `rounded-xl border px-5 py-3 font-medium transition duration-300 flex items-center justify-between shadow-lg ${
+        isSuccess
+          ? 'bg-emerald-950/60 border-emerald-600/70 text-emerald-300'
+          : 'bg-red-950/60 border-red-600/70 text-red-300'
+      }`;
+      flash.innerHTML = `
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            ${isSuccess 
+              ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>' 
+              : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>'}
+          </svg>
+          <span class="text-sm">${message}</span>
+        </div>
+        <button onclick="this.parentElement.classList.add('hidden')" class="text-slate-400 hover:text-white p-1" title="Close">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      `;
+      flash.classList.remove('hidden');
+      flash.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    // Custom Pop-Out Confirmation Modal
+    let pendingConfirmAction = null;
+
+    function showConfirmModal(opts) {
+      const modal = document.getElementById('confirm-modal');
+      const title = document.getElementById('modal-title');
+      const msg = document.getElementById('modal-message');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+      const iconDanger = document.getElementById('modal-icon-danger');
+      const iconSuccess = document.getElementById('modal-icon-success');
+      const iconBox = document.getElementById('modal-icon-container');
+
+      if (!modal) return;
+
+      title.textContent = opts.title || 'Confirmation';
+      msg.innerHTML = opts.message || 'Are you sure you want to proceed?';
+      confirmBtn.textContent = opts.confirmText || 'Confirm';
+
+      if (opts.isDanger) {
+        confirmBtn.className = "px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg";
+        iconBox.className = "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-500/10 border border-red-500/30 text-red-500";
+        iconDanger.classList.remove('hidden');
+        iconSuccess.classList.add('hidden');
+      } else {
+        confirmBtn.className = "px-6 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-wider transition shadow-lg";
+        iconBox.className = "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-amber-500/10 border border-amber-500/30 text-amber-400";
+        iconDanger.classList.add('hidden');
+        iconSuccess.classList.remove('hidden');
+      }
+
+      pendingConfirmAction = opts.onConfirm;
+      modal.classList.remove('hidden');
+    }
+
+    function hideConfirmModal() {
+      const modal = document.getElementById('confirm-modal');
+      if (modal) modal.classList.add('hidden');
+      pendingConfirmAction = null;
+    }
+
+    const modalCancelBtn = document.getElementById('modal-cancel-btn');
+    const modalCloseX = document.getElementById('modal-close-x');
+    const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+    const confirmModal = document.getElementById('confirm-modal');
+
+    if (modalCancelBtn) modalCancelBtn.addEventListener('click', hideConfirmModal);
+    if (modalCloseX) modalCloseX.addEventListener('click', hideConfirmModal);
+    if (confirmModal) {
+      confirmModal.addEventListener('click', function(e) {
+        if (e.target === confirmModal) hideConfirmModal();
+      });
+    }
+    if (modalConfirmBtn) {
+      modalConfirmBtn.addEventListener('click', function() {
+        if (typeof pendingConfirmAction === 'function') {
+          pendingConfirmAction();
+        }
+        hideConfirmModal();
+      });
+    }
+
+    // Update active count
+    function updateActiveCount() {
+      const rows = document.querySelectorAll('.customer-row');
+      const count = rows.length;
+      const countText = document.getElementById('active-count-text');
+      if (countText) {
+        countText.textContent = `${count} Active Customer${count === 1 ? '' : 's'}`;
+      }
+    }
+
+    // Confirm Delete Customer
+    function confirmDeleteCustomer(id, name) {
+      const row = document.querySelector(`.customer-row[data-id="${id}"]`);
+      showConfirmModal({
+        title: 'Delete Customer',
+        message: `Delete customer record for <span class="font-bold text-white">${name || '#' + id}</span>? This action cannot be undone.`,
+        confirmText: 'Yes, Delete',
+        isDanger: true,
+        onConfirm: function() {
+          if (row) {
+            row.style.transition = 'all 0.3s ease';
+            row.style.opacity = '0';
+            setTimeout(() => {
+              row.remove();
+              updateActiveCount();
+            }, 300);
+          }
+          showFlash('success', `Customer #${id} (${name}) was removed successfully.`);
+        }
+      });
+    }
+
+    // Delete form submission by ID
+    const deleteForm = document.getElementById('delete-form');
+    if (deleteForm) {
+      deleteForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const idInput = document.getElementById('delete_id_input');
+        const idVal = idInput ? idInput.value.trim() : '';
+        if (!idVal) return;
+
+        const row = document.querySelector(`.customer-row[data-id="${idVal}"]`);
+        const name = row ? row.getAttribute('data-name') : `Customer #${idVal}`;
+
+        if (!row) {
+          showFlash('danger', `Customer with ID #${idVal} not found.`);
+          return;
+        }
+
+        confirmDeleteCustomer(idVal, name);
+        deleteForm.reset();
+      });
+    }
+
+    // Accept Customer Request from Sidebar
+    let nextId = 105;
+    function acceptCustomerRequest(reqId, firstName, lastName, phone, option) {
+      const fullName = `${firstName} ${lastName}`;
+      showConfirmModal({
+        title: 'Accept Request',
+        message: `Accept request from <span class="font-bold text-white">${fullName}</span> and add to customer records?`,
+        confirmText: 'Yes, Accept',
+        isDanger: false,
+        onConfirm: function() {
+          const card = document.getElementById(reqId);
+          if (card) {
+            card.style.transition = 'all 0.3s ease';
+            card.style.opacity = '0';
+            setTimeout(() => card.remove(), 300);
+          }
+
+          // Add to table
+          const tbody = document.getElementById('customers-table-body');
+          if (tbody) {
+            const tr = document.createElement('tr');
+            tr.className = 'customer-row hover:bg-slate-800/30 transition';
+            tr.setAttribute('data-id', nextId);
+            tr.setAttribute('data-name', fullName);
+            tr.innerHTML = `
+              <td class="px-4 py-3 align-middle text-slate-400 font-mono">${nextId}</td>
+              <td class="px-4 py-3 align-middle font-medium text-white">${firstName}</td>
+              <td class="px-4 py-3 align-middle text-slate-300">${lastName}</td>
+              <td class="px-4 py-3 align-middle text-slate-400">${phone}</td>
+              <td class="px-4 py-3 align-middle text-cyan-400">${option}</td>
+              <td class="px-4 py-3 align-middle text-center">
+                <button type="button" onclick="confirmDeleteCustomer(${nextId}, '${fullName}')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
+                  Delete
+                </button>
+              </td>
+            `;
+            tbody.appendChild(tr);
+            nextId++;
+            updateActiveCount();
+          }
+
+          showFlash('success', `Request from ${fullName} accepted and added to customer directory.`);
+        }
       });
     }
   </script>
