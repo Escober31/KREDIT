@@ -13,6 +13,22 @@
     @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
     main { padding-top: calc(var(--nav-h) + 1rem); }
   </style>
+  <script>
+    // Immediate anti-flash check for deleted customers before rendering
+    (function() {
+      try {
+        var deleted = JSON.parse(localStorage.getItem('kreditcars_deleted_customers') || '[]');
+        if (Array.isArray(deleted) && deleted.length > 0) {
+          var style = document.createElement('style');
+          style.id = 'anti-flash-deleted-customers';
+          style.textContent = deleted.map(function(id) {
+            return '.customer-row[data-id="' + id + '"] { display: none !important; }';
+          }).join(' ');
+          document.head.appendChild(style);
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
 
@@ -204,6 +220,21 @@
                     <td class="px-4 py-3 align-middle text-center">
                       <button type="button" onclick="confirmDeleteCustomer(104, 'Patricia Bautista')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
                         Delete
+                      </button>
+                    </td>
+                  </tr>
+                  <!-- Empty State Row (Hidden when customers exist) -->
+                  <tr id="empty-state-row" class="hidden">
+                    <td colspan="6" class="py-12 text-center text-slate-400">
+                      <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      <p class="font-bold text-white text-sm mb-1">No Active Customers</p>
+                      <p class="text-xs text-slate-500 max-w-xs mx-auto mb-3">All customer records have been deleted or archived.</p>
+                      <button id="reset-customers-btn" type="button" onclick="resetCustomerCatalog()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 uppercase font-semibold text-xs rounded transition border border-slate-700">
+                        Reset Demo Customers
                       </button>
                     </td>
                   </tr>
@@ -403,13 +434,127 @@
       });
     }
 
+    // Storage keys for persistent customers
+    const STORAGE_KEY_DELETED = 'kreditcars_deleted_customers';
+    const STORAGE_KEY_CUSTOM = 'kreditcars_custom_customers';
+    const STORAGE_KEY_ACCEPTED_REQS = 'kreditcars_accepted_requests';
+
+    function getDeletedCustomerIds() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_DELETED);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveDeletedCustomerId(id) {
+      try {
+        const deleted = getDeletedCustomerIds();
+        const strId = String(id);
+        if (!deleted.includes(strId)) {
+          deleted.push(strId);
+          localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
+        }
+      } catch (err) {
+        console.error('Error saving deleted customer to localStorage:', err);
+      }
+    }
+
+    function getCustomCustomers() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_CUSTOM);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveCustomCustomer(cust) {
+      try {
+        const custom = getCustomCustomers();
+        custom.push(cust);
+        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
+      } catch (err) {
+        console.error('Error saving custom customer to localStorage:', err);
+      }
+    }
+
+    function removeCustomCustomer(id) {
+      try {
+        const custom = getCustomCustomers().filter(c => String(c.id) !== String(id));
+        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
+      } catch (err) {
+        console.error('Error removing custom customer from localStorage:', err);
+      }
+    }
+
+    function getAcceptedRequests() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_ACCEPTED_REQS);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveAcceptedRequest(reqId) {
+      try {
+        const reqs = getAcceptedRequests();
+        if (!reqs.includes(reqId)) {
+          reqs.push(reqId);
+          localStorage.setItem(STORAGE_KEY_ACCEPTED_REQS, JSON.stringify(reqs));
+        }
+      } catch (err) {
+        console.error('Error saving accepted request:', err);
+      }
+    }
+
+    function createCustomerRowElement(cust) {
+      const tr = document.createElement('tr');
+      tr.className = 'customer-row hover:bg-slate-800/30 transition';
+      tr.setAttribute('data-id', cust.id);
+      tr.setAttribute('data-name', cust.fullName);
+      tr.innerHTML = `
+        <td class="px-4 py-3 align-middle text-slate-400 font-mono">${cust.id}</td>
+        <td class="px-4 py-3 align-middle font-medium text-white">${cust.firstName}</td>
+        <td class="px-4 py-3 align-middle text-slate-300">${cust.lastName}</td>
+        <td class="px-4 py-3 align-middle text-slate-400">${cust.phone}</td>
+        <td class="px-4 py-3 align-middle text-cyan-400">${cust.option}</td>
+        <td class="px-4 py-3 align-middle text-center">
+          <button type="button" class="btn-del-cust px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
+            Delete
+          </button>
+        </td>
+      `;
+
+      const delBtn = tr.querySelector('.btn-del-cust');
+      if (delBtn) {
+        delBtn.addEventListener('click', function() {
+          confirmDeleteCustomer(cust.id, cust.fullName);
+        });
+      }
+
+      return tr;
+    }
+
     // Update active count
     function updateActiveCount() {
       const rows = document.querySelectorAll('.customer-row');
       const count = rows.length;
       const countText = document.getElementById('active-count-text');
+      const emptyRow = document.getElementById('empty-state-row');
+
       if (countText) {
         countText.textContent = `${count} Active Customer${count === 1 ? '' : 's'}`;
+      }
+
+      if (emptyRow) {
+        if (count === 0) {
+          emptyRow.classList.remove('hidden');
+        } else {
+          emptyRow.classList.add('hidden');
+        }
       }
     }
 
@@ -422,6 +567,11 @@
         confirmText: 'Yes, Delete',
         isDanger: true,
         onConfirm: function() {
+          // 1. Permanently record deletion in localStorage so it stays deleted across refreshes/page visits
+          saveDeletedCustomerId(id);
+          removeCustomCustomer(id);
+
+          // 2. Animate and remove from DOM
           if (row) {
             row.style.transition = 'all 0.3s ease';
             row.style.opacity = '0';
@@ -429,7 +579,10 @@
               row.remove();
               updateActiveCount();
             }, 300);
+          } else {
+            updateActiveCount();
           }
+
           showFlash('success', `Customer #${id} (${name}) was removed successfully.`);
         }
       });
@@ -474,26 +627,28 @@
             setTimeout(() => card.remove(), 300);
           }
 
-          // Add to table
+          saveAcceptedRequest(reqId);
+
+          const newCust = {
+            id: nextId,
+            firstName: firstName,
+            lastName: lastName,
+            fullName: fullName,
+            phone: phone,
+            option: option
+          };
+
+          saveCustomCustomer(newCust);
+
           const tbody = document.getElementById('customers-table-body');
+          const emptyRow = document.getElementById('empty-state-row');
           if (tbody) {
-            const tr = document.createElement('tr');
-            tr.className = 'customer-row hover:bg-slate-800/30 transition';
-            tr.setAttribute('data-id', nextId);
-            tr.setAttribute('data-name', fullName);
-            tr.innerHTML = `
-              <td class="px-4 py-3 align-middle text-slate-400 font-mono">${nextId}</td>
-              <td class="px-4 py-3 align-middle font-medium text-white">${firstName}</td>
-              <td class="px-4 py-3 align-middle text-slate-300">${lastName}</td>
-              <td class="px-4 py-3 align-middle text-slate-400">${phone}</td>
-              <td class="px-4 py-3 align-middle text-cyan-400">${option}</td>
-              <td class="px-4 py-3 align-middle text-center">
-                <button type="button" onclick="confirmDeleteCustomer(${nextId}, '${fullName}')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
-                  Delete
-                </button>
-              </td>
-            `;
-            tbody.appendChild(tr);
+            const tr = createCustomerRowElement(newCust);
+            if (emptyRow) {
+              tbody.insertBefore(tr, emptyRow);
+            } else {
+              tbody.appendChild(tr);
+            }
             nextId++;
             updateActiveCount();
           }
@@ -502,6 +657,68 @@
         }
       });
     }
+
+    // Reset Demo Customers
+    function resetCustomerCatalog() {
+      showConfirmModal({
+        title: 'Reset Customer Directory',
+        message: 'Restore all default demo customer records back to the directory?',
+        confirmText: 'Reset Customers',
+        isDanger: false,
+        onConfirm: function() {
+          localStorage.removeItem(STORAGE_KEY_DELETED);
+          localStorage.removeItem(STORAGE_KEY_CUSTOM);
+          localStorage.removeItem(STORAGE_KEY_ACCEPTED_REQS);
+          window.location.reload();
+        }
+      });
+    }
+
+    // Initialize Customers on load: exclude deleted customers and inject custom customers
+    function initCustomers() {
+      const deletedIds = getDeletedCustomerIds().map(String);
+
+      // Remove any hardcoded rows that were deleted
+      document.querySelectorAll('.customer-row').forEach(row => {
+        const rowId = String(row.getAttribute('data-id'));
+        if (deletedIds.includes(rowId)) {
+          row.remove();
+        }
+      });
+
+      // Remove any already-accepted request cards from sidebar
+      const acceptedReqs = getAcceptedRequests();
+      acceptedReqs.forEach(reqId => {
+        const card = document.getElementById(reqId);
+        if (card) card.remove();
+      });
+
+      // Add custom / accepted customers that are not deleted
+      const customCusts = getCustomCustomers();
+      const tbody = document.getElementById('customers-table-body');
+      const emptyRow = document.getElementById('empty-state-row');
+
+      if (tbody) {
+        customCusts.forEach(cust => {
+          if (!deletedIds.includes(String(cust.id))) {
+            const tr = createCustomerRowElement(cust);
+            if (emptyRow) {
+              tbody.insertBefore(tr, emptyRow);
+            } else {
+              tbody.appendChild(tr);
+            }
+            if (typeof cust.id === 'number' && cust.id >= nextId) {
+              nextId = cust.id + 1;
+            }
+          }
+        });
+      }
+
+      updateActiveCount();
+    }
+
+    // Initialize customers immediately
+    initCustomers();
   </script>
 </body>
 </html>

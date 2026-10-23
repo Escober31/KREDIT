@@ -13,6 +13,22 @@
     @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
     main { padding-top: calc(var(--nav-h) + 1rem); }
   </style>
+  <script>
+    // Immediate anti-flash check for deleted staff before rendering
+    (function() {
+      try {
+        var deleted = JSON.parse(localStorage.getItem('kreditcars_deleted_staff') || '[]');
+        if (Array.isArray(deleted) && deleted.length > 0) {
+          var style = document.createElement('style');
+          style.id = 'anti-flash-deleted-staff';
+          style.textContent = deleted.map(function(id) {
+            return '.staff-row[data-id="' + id + '"] { display: none !important; }';
+          }).join(' ');
+          document.head.appendChild(style);
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
 
@@ -183,7 +199,15 @@
           </svg>
         </div>
         <h3 class="text-base font-bold text-slate-200 mb-1">No Active Staff Members</h3>
-        <p class="text-xs text-slate-500 max-w-sm mx-auto">All staff accounts have been removed. Click "+ Add Staff" to register a new user.</p>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">All staff accounts have been removed. Click "+ Add Staff" to register a new user.</p>
+        <div class="flex items-center justify-center gap-3">
+          <a href="admin_create_user.html" class="inline-flex items-center gap-2 bg-amber-500 text-black px-4 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-xs shadow">
+            <span class="inline-block skew-x-6">+ Add Staff</span>
+          </a>
+          <button id="reset-staff-btn" type="button" onclick="resetStaffCatalog()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 uppercase font-semibold text-xs rounded transition border border-slate-700">
+            Reset Demo Staff
+          </button>
+        </div>
       </div>
 
       <div class="mt-6 text-xs text-slate-500">
@@ -379,6 +403,92 @@
       });
     }
 
+    // Storage keys for persistent staff
+    const STORAGE_KEY_DELETED = 'kreditcars_deleted_staff';
+    const STORAGE_KEY_CUSTOM = 'kreditcars_custom_staff';
+
+    function getDeletedStaffIds() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_DELETED);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveDeletedStaffId(id) {
+      try {
+        const deleted = getDeletedStaffIds();
+        const strId = String(id);
+        if (!deleted.includes(strId)) {
+          deleted.push(strId);
+          localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
+        }
+      } catch (err) {
+        console.error('Error saving deleted staff to localStorage:', err);
+      }
+    }
+
+    function getCustomStaff() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_CUSTOM);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function removeCustomStaff(id) {
+      try {
+        const custom = getCustomStaff().filter(s => String(s.id) !== String(id));
+        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
+      } catch (err) {
+        console.error('Error removing custom staff:', err);
+      }
+    }
+
+    function createStaffRowElement(staff) {
+      const tr = document.createElement('tr');
+      tr.className = 'staff-row hover:bg-slate-900/50 transition';
+      tr.setAttribute('data-id', staff.id);
+      tr.setAttribute('data-name', staff.name);
+
+      const isAdmin = (staff.role || '').toLowerCase() === 'admin';
+      const roleBadge = isAdmin
+        ? '<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Admin</span>'
+        : '<span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Staff</span>';
+
+      tr.innerHTML = `
+        <td class="px-4 py-3 align-middle">
+          <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
+            <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+          </div>
+        </td>
+        <td class="px-4 py-3 align-middle font-medium text-white">${staff.name}</td>
+        <td class="px-4 py-3 align-middle text-slate-300">${staff.email || '—'}</td>
+        <td class="px-4 py-3 align-middle text-slate-400">${staff.contact || '—'}</td>
+        <td class="px-4 py-3 align-middle">
+          ${roleBadge}
+        </td>
+        <td class="px-4 py-3 align-middle text-xs text-slate-400">${staff.created || new Date().toISOString().slice(0, 10)}</td>
+        <td class="px-4 py-3 align-middle text-center">
+          <div class="flex items-center justify-center gap-2">
+            <a href="admin_create_user.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
+            <button type="button" class="btn-delete-staff px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
+          </div>
+        </td>
+      `;
+
+      const deleteBtn = tr.querySelector('.btn-delete-staff');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+          confirmDeleteStaff(staff.id, staff.name);
+        });
+      }
+
+      return tr;
+    }
+
     // Update active count
     function updateStaffCount() {
       const rows = document.querySelectorAll('.staff-row');
@@ -390,8 +500,12 @@
         countText.textContent = `${count} Active Staff`;
       }
 
-      if (count === 0 && emptyState) {
-        emptyState.classList.remove('hidden');
+      if (emptyState) {
+        if (count === 0) {
+          emptyState.classList.remove('hidden');
+        } else {
+          emptyState.classList.add('hidden');
+        }
       }
     }
 
@@ -404,6 +518,11 @@
         confirmText: 'Yes, Delete',
         isDanger: true,
         onConfirm: function() {
+          // 1. Permanently record deletion in localStorage so it stays deleted across refreshes/page visits
+          saveDeletedStaffId(id);
+          removeCustomStaff(id);
+
+          // 2. Animate and remove from DOM
           if (row) {
             row.style.transition = 'all 0.3s ease';
             row.style.opacity = '0';
@@ -411,11 +530,59 @@
               row.remove();
               updateStaffCount();
             }, 300);
+          } else {
+            updateStaffCount();
           }
-          showFlash('success', `Staff account for ${name} was deleted successfully.`);
+
+          showFlash('success', `Staff account for ${name} was permanently removed.`);
         }
       });
     }
+
+    // Reset Demo Staff
+    function resetStaffCatalog() {
+      showConfirmModal({
+        title: 'Reset Staff List',
+        message: 'Restore all default demo staff accounts back to the roster?',
+        confirmText: 'Reset Staff',
+        isDanger: false,
+        onConfirm: function() {
+          localStorage.removeItem(STORAGE_KEY_DELETED);
+          localStorage.removeItem(STORAGE_KEY_CUSTOM);
+          window.location.reload();
+        }
+      });
+    }
+
+    // Initialize Staff on load: exclude deleted accounts and inject custom accounts
+    function initStaff() {
+      const deletedIds = getDeletedStaffIds().map(String);
+
+      // Remove any hardcoded rows that were marked as deleted
+      document.querySelectorAll('.staff-row').forEach(row => {
+        const rowId = String(row.getAttribute('data-id'));
+        if (deletedIds.includes(rowId)) {
+          row.remove();
+        }
+      });
+
+      // Add custom staff that are not deleted
+      const customStaff = getCustomStaff();
+      const tbody = document.getElementById('staff-table-body');
+
+      if (tbody) {
+        customStaff.forEach(staff => {
+          if (!deletedIds.includes(String(staff.id))) {
+            tbody.appendChild(createStaffRowElement(staff));
+          }
+        });
+      }
+
+      updateStaffCount();
+    }
+
+    // Initialize staff roster immediately
+    initStaff();
   </script>
 </body>
 </html>

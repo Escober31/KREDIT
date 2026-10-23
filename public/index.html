@@ -13,6 +13,22 @@
     @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
     main { padding-top: calc(var(--nav-h) + 1rem); }
   </style>
+  <script>
+    // Immediate anti-flash check for deleted vehicles before rendering
+    (function() {
+      try {
+        var deleted = JSON.parse(localStorage.getItem('kreditcars_deleted_vehicles') || '[]');
+        if (Array.isArray(deleted) && deleted.length > 0) {
+          var style = document.createElement('style');
+          style.id = 'anti-flash-deleted';
+          style.textContent = deleted.map(function(id) {
+            return '.car-card[data-id="' + id + '"] { display: none !important; }';
+          }).join(' ');
+          document.head.appendChild(style);
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 <body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
 
@@ -222,9 +238,14 @@
           </div>
           <h3 class="text-lg font-bold text-white italic mb-1">No Vehicles in Inventory</h3>
           <p class="text-sm text-slate-400 max-w-sm mx-auto mb-6">There are currently no listed vehicles. Click below to add a new vehicle to the catalog.</p>
-          <button onclick="document.getElementById('toggle-add-form').click()" class="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-xs shadow">
-            <span class="inline-block skew-x-6">+ Add First Vehicle</span>
-          </button>
+          <div class="flex items-center justify-center gap-3">
+            <button onclick="document.getElementById('toggle-add-form').click()" class="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-xs shadow">
+              <span class="inline-block skew-x-6">+ Add First Vehicle</span>
+            </button>
+            <button id="reset-inventory-btn" type="button" onclick="resetInventoryCatalog()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 uppercase font-semibold text-xs rounded transition border border-slate-700">
+              Reset Demo Catalog
+            </button>
+          </div>
         </div>
 
       </div>
@@ -233,7 +254,7 @@
       <div id="add-form" class="mt-8 hidden bg-[#0B1320] border border-slate-800 p-6 rounded-xl shadow-lg">
         <h3 class="text-xl font-bold mb-4 text-white">Add Vehicle</h3>
 
-        <form method="post" enctype="multipart/form-data" class="space-y-4">
+        <form id="add-vehicle-form" method="post" enctype="multipart/form-data" class="space-y-4">
           <div class="grid md:grid-cols-2 gap-4">
             <input name="make" placeholder="Brand Name" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
             <input name="model" placeholder="Model" required class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
@@ -499,6 +520,117 @@
       });
     }
 
+    // Storage keys for persistent inventory
+    const STORAGE_KEY_DELETED = 'kreditcars_deleted_vehicles';
+    const STORAGE_KEY_CUSTOM = 'kreditcars_custom_vehicles';
+
+    function getDeletedCarIds() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_DELETED);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveDeletedCarId(id) {
+      try {
+        const deleted = getDeletedCarIds();
+        const strId = String(id);
+        if (!deleted.includes(strId)) {
+          deleted.push(strId);
+          localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
+        }
+      } catch (err) {
+        console.error('Error saving deleted car:', err);
+      }
+    }
+
+    function getCustomCars() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_CUSTOM);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveCustomCar(car) {
+      try {
+        const custom = getCustomCars();
+        custom.push(car);
+        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
+      } catch (err) {
+        console.error('Error saving custom car:', err);
+      }
+    }
+
+    function removeCustomCar(id) {
+      try {
+        const custom = getCustomCars().filter(c => String(c.id) !== String(id));
+        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
+      } catch (err) {
+        console.error('Error removing custom car:', err);
+      }
+    }
+
+    function createCarCardElement(car) {
+      const card = document.createElement('div');
+      card.className = "car-card group bg-[#0B1320] border border-slate-800 rounded-xl overflow-hidden flex flex-col hover:border-amber-500/50 transition duration-200";
+      card.setAttribute('data-id', car.id);
+      card.setAttribute('data-name', car.name);
+
+      const isNew = (car.condition || '').toLowerCase() === 'new';
+      const badgeBorder = isNew ? 'border-emerald-500' : 'border-amber-500';
+
+      card.innerHTML = `
+        <div class="relative h-52 bg-slate-900 flex items-center justify-center border-b border-slate-800 overflow-hidden">
+          <div class="absolute inset-0 bg-gradient-to-t from-[#0B1320] to-slate-900/50 flex items-center justify-center">
+            <svg class="w-16 h-16 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+            </svg>
+          </div>
+          <div class="absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 ${badgeBorder}">
+            ${car.condition || 'Second Hand'}
+          </div>
+        </div>
+
+        <div class="p-5 flex-1 flex flex-col">
+          <h3 class="text-lg font-bold text-white italic mb-1 group-hover:text-amber-500 transition">
+            ${car.name}
+          </h3>
+          <div class="flex gap-4 text-xs text-slate-400 font-mono mb-6 uppercase">
+            <span>${car.mileage || '0 mi'}</span>
+            <span>•</span>
+            <span>${car.year || '2024'}</span>
+          </div>
+
+          <div class="mt-auto flex items-center justify-between pt-4 border-t border-slate-800 gap-2">
+            <span class="text-xl font-bold text-cyan-400">${car.price}</span>
+
+            <div class="flex gap-2">
+              <a href="detail.html?id=${car.id}" class="bg-slate-800 hover:bg-amber-500 hover:text-black text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                Details
+              </a>
+              <button type="button" class="btn-delete-card bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const deleteBtn = card.querySelector('.btn-delete-card');
+      if (deleteBtn) {
+        deleteBtn.addEventListener('click', function() {
+          confirmDeleteCar(car.id, car.name);
+        });
+      }
+
+      return card;
+    }
+
     // Update active vehicles count
     function updateVehicleCount() {
       const cards = document.querySelectorAll('.car-card');
@@ -510,8 +642,12 @@
         countBadge.textContent = `${count} Available`;
       }
 
-      if (count === 0 && emptyState) {
-        emptyState.classList.remove('hidden');
+      if (emptyState) {
+        if (count === 0) {
+          emptyState.classList.remove('hidden');
+        } else {
+          emptyState.classList.add('hidden');
+        }
       }
     }
 
@@ -524,6 +660,11 @@
         confirmText: 'Yes, Delete',
         isDanger: true,
         onConfirm: function() {
+          // 1. Permanently record deletion in localStorage so it stays deleted across refreshes/page visits
+          saveDeletedCarId(id);
+          removeCustomCar(id);
+
+          // 2. Animate and remove element from DOM
           if (card) {
             card.style.transition = 'all 0.3s ease';
             card.style.opacity = '0';
@@ -532,11 +673,113 @@
               card.remove();
               updateVehicleCount();
             }, 300);
+          } else {
+            updateVehicleCount();
           }
-          showFlash('success', `Vehicle "${name}" was removed from inventory.`);
+
+          showFlash('success', `Vehicle "${name}" was permanently removed from inventory.`);
         }
       });
     }
+
+    // Reset Demo Catalog
+    function resetInventoryCatalog() {
+      showConfirmModal({
+        title: 'Reset Inventory Catalog',
+        message: 'Restore all default vehicles back to the inventory?',
+        confirmText: 'Reset Catalog',
+        isDanger: false,
+        onConfirm: function() {
+          localStorage.removeItem(STORAGE_KEY_DELETED);
+          localStorage.removeItem(STORAGE_KEY_CUSTOM);
+          window.location.reload();
+        }
+      });
+    }
+
+    // Initialize Inventory on load: exclude deleted vehicles and inject any custom vehicles
+    function initInventory() {
+      const deletedIds = getDeletedCarIds().map(String);
+
+      // Remove any hardcoded cards that were marked as deleted
+      document.querySelectorAll('.car-card').forEach(card => {
+        const cardId = String(card.getAttribute('data-id'));
+        if (deletedIds.includes(cardId)) {
+          card.remove();
+        }
+      });
+
+      // Add custom vehicles that are not deleted
+      const customCars = getCustomCars();
+      const grid = document.getElementById('featured-grid');
+      const emptyState = document.getElementById('empty-state');
+
+      customCars.forEach(car => {
+        if (!deletedIds.includes(String(car.id))) {
+          const cardEl = createCarCardElement(car);
+          if (grid && emptyState) {
+            grid.insertBefore(cardEl, emptyState);
+          } else if (grid) {
+            grid.appendChild(cardEl);
+          }
+        }
+      });
+
+      updateVehicleCount();
+    }
+
+    // Add Vehicle form submission handling
+    const addVehicleForm = document.getElementById('add-vehicle-form');
+    if (addVehicleForm) {
+      addVehicleForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const make = (addVehicleForm.elements['make'] ? addVehicleForm.elements['make'].value : '').trim();
+        const model = (addVehicleForm.elements['model'] ? addVehicleForm.elements['model'].value : '').trim();
+        const year = (addVehicleForm.elements['year'] ? addVehicleForm.elements['year'].value : '').trim() || new Date().getFullYear();
+        const condition = (addVehicleForm.elements['condition'] ? addVehicleForm.elements['condition'].value : '') || 'Second Hand';
+        const priceVal = (addVehicleForm.elements['price'] ? addVehicleForm.elements['price'].value : '').trim();
+        const mileageVal = (addVehicleForm.elements['downpayment'] ? addVehicleForm.elements['downpayment'].value : '').trim();
+
+        const fullName = `${make} ${model}`.trim() || 'New Vehicle';
+        const newId = 'car_' + Date.now();
+
+        let displayPrice = priceVal;
+        if (displayPrice && !displayPrice.startsWith('₱')) {
+          const num = Number(displayPrice.replace(/[^0-9.]/g, ''));
+          displayPrice = (!isNaN(num) && num > 0) ? `₱${num.toLocaleString()}` : `₱${displayPrice}`;
+        } else if (!displayPrice) {
+          displayPrice = '₱0';
+        }
+
+        const newCar = {
+          id: newId,
+          name: fullName,
+          year: year,
+          condition: condition,
+          mileage: mileageVal ? `${mileageVal} mi` : '0 mi',
+          price: displayPrice
+        };
+
+        saveCustomCar(newCar);
+
+        const grid = document.getElementById('featured-grid');
+        const emptyState = document.getElementById('empty-state');
+        const cardEl = createCarCardElement(newCar);
+        if (grid && emptyState) {
+          grid.insertBefore(cardEl, emptyState);
+        } else if (grid) {
+          grid.appendChild(cardEl);
+        }
+
+        updateVehicleCount();
+        addVehicleForm.reset();
+        document.getElementById('add-form').classList.add('hidden');
+        showFlash('success', `Vehicle "${fullName}" was added to inventory.`);
+      });
+    }
+
+    // Initialize inventory immediately
+    initInventory();
   </script>
 </body>
 </html>
