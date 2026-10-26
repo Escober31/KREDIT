@@ -110,7 +110,7 @@
               </div>
 
               <!-- Vehicle photo if available -->
-              <img id="vehicle-photo" src="" alt="Vehicle Image" class="hidden w-full h-full object-cover relative z-10" />
+              <img id="vehicle-photo" src="" alt="Vehicle Image" class="hidden w-full h-full object-cover relative z-10 transition duration-200" />
 
               <!-- Condition Tag in top left (Identical to index.html) -->
               <div id="condition-tag" class="absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-amber-500 z-20">
@@ -122,7 +122,24 @@
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                 Available
               </div>
+
+              <!-- Prev / Next Navigation Arrows on Main Photo (Multi-photos) -->
+              <button id="photo-prev-btn" type="button" aria-label="Previous photo" class="hidden absolute left-3 top-1/2 -translate-y-1/2 bg-black/75 hover:bg-black/95 text-white hover:text-amber-400 w-9 h-9 rounded-full items-center justify-center z-20 transition border border-slate-700/80 shadow">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              </button>
+              <button id="photo-next-btn" type="button" aria-label="Next photo" class="hidden absolute right-3 top-1/2 -translate-y-1/2 bg-black/75 hover:bg-black/95 text-white hover:text-amber-400 w-9 h-9 rounded-full items-center justify-center z-20 transition border border-slate-700/80 shadow">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+              </button>
+
+              <!-- Photo Count Overlay Badge -->
+              <div id="photo-count-badge" class="hidden absolute bottom-3 right-3 bg-black/85 text-amber-400 text-xs font-mono font-bold px-2.5 py-1 rounded border border-slate-700 items-center gap-1.5 shadow z-20">
+                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
+                <span id="photo-counter-text">1 / 1</span>
+              </div>
             </div>
+
+            <!-- Thumbnail gallery strip (shown if vehicle has multiple photos) -->
+            <div id="photo-gallery-strip" class="hidden p-3 bg-slate-950/80 border-b border-slate-800/80 flex items-center gap-2 overflow-x-auto"></div>
 
             <!-- Card Bottom Bar: Quick Highlights -->
             <div class="p-4 bg-[#0B1320] flex items-center justify-between text-xs text-slate-400 font-mono">
@@ -301,34 +318,34 @@
       <form id="inquiry-modal-form" class="space-y-4">
         <div>
           <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Full Name</label>
-          <input type="text" required placeholder="Your Full Name" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+          <input id="inq-fullname" type="text" required placeholder="Your Full Name" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Contact Phone</label>
-            <input type="tel" required placeholder="0917-000-0000" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+            <input id="inq-phone" type="tel" required placeholder="0917-000-0000" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
           </div>
           <div>
             <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Email</label>
-            <input type="email" required placeholder="you@email.com" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+            <input id="inq-email" type="email" required placeholder="you@email.com" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
           </div>
         </div>
 
         <div>
           <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Payment / Financing Preference</label>
-          <select class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
-            <option>Cash Payment (Full)</option>
-            <option>Financing - 36 Months Term</option>
-            <option>Financing - 48 Months Term</option>
-            <option>Financing - 60 Months Term</option>
-            <option>Vehicle Trade-In Assessment</option>
+          <select id="inq-preference" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+            <option value="Cash Payment (Full)">Cash Payment (Full)</option>
+            <option value="Financing - 36 Months Term">Financing - 36 Months Term</option>
+            <option value="Financing - 48 Months Term">Financing - 48 Months Term</option>
+            <option value="Financing - 60 Months Term">Financing - 60 Months Term</option>
+            <option value="Vehicle Trade-In Assessment">Vehicle Trade-In Assessment</option>
           </select>
         </div>
 
         <div>
           <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Questions or Message</label>
-          <textarea rows="3" placeholder="Tell us if you want to book a viewing or test drive..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"></textarea>
+          <textarea id="inq-message" rows="3" placeholder="Tell us if you want to book a viewing or test drive..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"></textarea>
         </div>
 
         <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold uppercase py-2.5 rounded-lg text-sm transition">
@@ -393,16 +410,22 @@
 
   <!-- SCRIPT -->
   <script>
-    // Vehicles dataset matching index.html
-    const carsData = {
-      1: {
-        id: 1,
+    // Storage Keys matching index.html
+    const STORAGE_KEY_DELETED = 'kreditcars_deleted_vehicles';
+    const STORAGE_KEY_CUSTOM = 'kreditcars_custom_vehicles';
+
+    // Default base vehicles
+    const defaultCarsData = {
+      "1": {
+        id: "1",
         make: "Toyota",
         model: "Vios 1.5 G",
+        name: "Toyota Vios 1.5 G",
         year: "2021",
         condition: "Second Hand",
         mileage: "35,000 mi",
-        price: 650000,
+        price: "₱650,000",
+        rawPrice: 650000,
         downpayment: 65000,
         stock: 2,
         fuel_type: "Gasoline",
@@ -413,16 +436,19 @@
         finance_36: "₱21,450 / mo",
         finance_48: "₱17,200 / mo",
         finance_60: "₱14,800 / mo",
-        photo: ""
+        photo: "",
+        photos: []
       },
-      2: {
-        id: 2,
+      "2": {
+        id: "2",
         make: "Mitsubishi",
         model: "Montero Sport",
+        name: "Mitsubishi Montero Sport",
         year: "2020",
         condition: "Second Hand",
         mileage: "42,000 mi",
-        price: 1180000,
+        price: "₱1,180,000",
+        rawPrice: 1180000,
         downpayment: 118000,
         stock: 1,
         fuel_type: "Diesel",
@@ -433,16 +459,19 @@
         finance_36: "₱38,940 / mo",
         finance_48: "₱31,270 / mo",
         finance_60: "₱26,900 / mo",
-        photo: ""
+        photo: "",
+        photos: []
       },
-      3: {
-        id: 3,
+      "3": {
+        id: "3",
         make: "Ford",
         model: "Ranger Wildtrak",
+        name: "Ford Ranger Wildtrak",
         year: "2023",
         condition: "New",
         mileage: "12,000 mi",
-        price: 1450000,
+        price: "₱1,450,000",
+        rawPrice: 1450000,
         downpayment: 145000,
         stock: 3,
         fuel_type: "Diesel",
@@ -453,9 +482,90 @@
         finance_36: "₱47,850 / mo",
         finance_48: "₱38,425 / mo",
         finance_60: "₱33,060 / mo",
-        photo: ""
+        photo: "",
+        photos: []
       }
     };
+
+    function getDeletedCarIds() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function getCustomCars() {
+      try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY_CUSTOM) || '[]');
+      } catch (e) {
+        return [];
+      }
+    }
+
+    // Get all vehicles merged: default + custom, excluding deleted
+    function getAllVehicles() {
+      const deletedIds = getDeletedCarIds().map(String);
+      const allCars = {};
+
+      // 1. Add default cars if not deleted
+      Object.keys(defaultCarsData).forEach(key => {
+        if (!deletedIds.includes(String(key))) {
+          allCars[String(key)] = { ...defaultCarsData[key] };
+        }
+      });
+
+      // 2. Add custom cars if not deleted
+      const customCars = getCustomCars();
+      customCars.forEach(c => {
+        const idStr = String(c.id);
+        if (deletedIds.includes(idStr)) return;
+
+        // Normalize photos array
+        let photosList = [];
+        if (Array.isArray(c.photos) && c.photos.length > 0) {
+          photosList = c.photos.filter(p => typeof p === 'string' && p.trim() !== '');
+        } else if (c.photo && typeof c.photo === 'string' && c.photo.trim() !== '') {
+          photosList = [c.photo];
+        }
+
+        const rawPriceNum = Number(String(c.price || '').replace(/[^0-9.]/g, '')) || Number(c.rawPrice) || 0;
+        const downpaymentNum = Number(c.downpayment) || Math.round(rawPriceNum * 0.1) || 50000;
+
+        const loan = Math.max(0, rawPriceNum - downpaymentNum);
+        const fin36 = c.finance_36 || (loan > 0 ? `₱${Math.round((loan * 1.18) / 36).toLocaleString()} / mo` : '₱21,450 / mo');
+        const fin48 = c.finance_48 || (loan > 0 ? `₱${Math.round((loan * 1.25) / 48).toLocaleString()} / mo` : '₱17,200 / mo');
+        const fin60 = c.finance_60 || (loan > 0 ? `₱${Math.round((loan * 1.32) / 60).toLocaleString()} / mo` : '₱14,800 / mo');
+
+        const carName = c.name || `${c.make || ''} ${c.model || ''}`.trim() || 'Vehicle';
+
+        allCars[idStr] = {
+          id: idStr,
+          make: c.make || (c.name ? c.name.split(' ')[0] : 'Vehicle'),
+          model: c.model || (c.name ? c.name.split(' ').slice(1).join(' ') : 'Model'),
+          name: carName,
+          year: String(c.year || '2024'),
+          condition: c.condition || 'Second Hand',
+          mileage: c.mileage || '0 mi',
+          price: (typeof c.price === 'string' && c.price.startsWith('₱')) ? c.price : `₱${rawPriceNum.toLocaleString()}`,
+          rawPrice: rawPriceNum,
+          downpayment: downpaymentNum,
+          stock: Number(c.stock) || 1,
+          fuel_type: c.fuel_type || 'Gasoline',
+          engine: c.engine || 'Standard Engine',
+          transmission: c.transmission || 'Automatic',
+          location: c.location || 'Olongapo City Showroom',
+          description: c.description || `Pristine condition ${carName}. Well-maintained, verified documents, complete service records from authorized dealership, and 160-point mechanical inspection passed. Available for viewing and test drive.`,
+          finance_36: fin36,
+          finance_48: fin48,
+          finance_60: fin60,
+          photo: photosList.length > 0 ? photosList[0] : (c.photo || ''),
+          photos: photosList
+        };
+      });
+
+      return allCars;
+    }
 
     function showToast(msg) {
       const toast = document.getElementById('toast');
@@ -467,24 +577,100 @@
       }
     }
 
-    function getParamId() {
+    function getParamId(allCars) {
       const params = new URLSearchParams(window.location.search);
-      const id = parseInt(params.get('id'), 10);
-      return (id && carsData[id]) ? id : 1;
+      const idParam = params.get('id');
+
+      if (idParam && allCars[idParam]) {
+        return idParam;
+      }
+      if (idParam) {
+        const found = Object.keys(allCars).find(k => String(k).toLowerCase() === String(idParam).toLowerCase());
+        if (found) return found;
+      }
+
+      // Default to first available car
+      const keys = Object.keys(allCars);
+      return keys.length > 0 ? keys[0] : null;
+    }
+
+    // Photo Gallery State
+    let currentVehiclePhotos = [];
+    let currentPhotoIndex = 0;
+
+    function setVehiclePhotoIndex(index) {
+      if (!currentVehiclePhotos || currentVehiclePhotos.length === 0) return;
+      if (index < 0) index = currentVehiclePhotos.length - 1;
+      if (index >= currentVehiclePhotos.length) index = 0;
+      currentPhotoIndex = index;
+
+      const photoImg = document.getElementById('vehicle-photo');
+      if (photoImg) {
+        photoImg.src = currentVehiclePhotos[currentPhotoIndex];
+      }
+
+      const counterText = document.getElementById('photo-counter-text');
+      if (counterText) {
+        counterText.textContent = `${currentPhotoIndex + 1} / ${currentVehiclePhotos.length}`;
+      }
+
+      // Update thumbnail borders
+      const strip = document.getElementById('photo-gallery-strip');
+      if (strip) {
+        strip.querySelectorAll('.gallery-thumb-btn').forEach((btn, idx) => {
+          if (idx === currentPhotoIndex) {
+            btn.className = 'gallery-thumb-btn flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 border-amber-500 shadow-md ring-2 ring-amber-500/40 transition transform scale-105';
+          } else {
+            btn.className = 'gallery-thumb-btn flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border border-slate-700 opacity-60 hover:opacity-100 hover:border-slate-500 transition';
+          }
+        });
+      }
+    }
+
+    // Prev / Next button listeners
+    const prevBtn = document.getElementById('photo-prev-btn');
+    const nextBtn = document.getElementById('photo-next-btn');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setVehiclePhotoIndex(currentPhotoIndex - 1);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setVehiclePhotoIndex(currentPhotoIndex + 1);
+      });
     }
 
     function renderCar(id) {
-      const car = carsData[id] || carsData[1];
-      const fullName = `${car.make} ${car.model}`;
+      const allCars = getAllVehicles();
+      const car = allCars[id] || (Object.keys(allCars).length > 0 ? allCars[Object.keys(allCars)[0]] : null);
+
+      if (!car) {
+        document.getElementById('car-title').textContent = "Vehicle Not Found";
+        document.getElementById('car-description').textContent = "This vehicle is no longer available in the active inventory.";
+        return;
+      }
+
+      const fullName = car.name || `${car.make || ''} ${car.model || ''}`.trim();
 
       document.title = `${fullName} — KreditCars`;
       const breadcrumbCar = document.getElementById('breadcrumb-car');
       if (breadcrumbCar) breadcrumbCar.textContent = fullName;
-      document.getElementById('vehicle-stock-id').textContent = String(car.id).padStart(3, '0');
+
+      // Format clean Stock ID: #KC-001 or #KC-2109
+      let stockCode = '001';
+      if (/^\d+$/.test(car.id)) {
+        stockCode = String(car.id).padStart(3, '0');
+      } else {
+        stockCode = car.id.replace('car_', '').slice(-4).toUpperCase();
+      }
+      document.getElementById('vehicle-stock-id').textContent = stockCode;
       document.getElementById('card-stock-label').textContent = `${car.stock} Unit(s) Available`;
 
       document.getElementById('car-title').textContent = fullName;
-      document.getElementById('car-price').textContent = `₱${Number(car.price).toLocaleString()}`;
+      document.getElementById('car-price').textContent = car.price;
       document.getElementById('car-mileage').textContent = car.mileage;
       document.getElementById('car-year').textContent = car.year;
       document.getElementById('car-condition-text').textContent = car.condition;
@@ -492,7 +678,7 @@
       // Condition badge styling
       const conditionTag = document.getElementById('condition-tag');
       conditionTag.textContent = car.condition;
-      if (car.condition === 'New') {
+      if ((car.condition || '').toLowerCase() === 'new') {
         conditionTag.className = "absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-emerald-500 z-20";
       } else {
         conditionTag.className = "absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-amber-500 z-20";
@@ -504,7 +690,10 @@
       document.getElementById('metric-mileage').textContent = car.mileage;
 
       // Detail specs
-      document.getElementById('car-downpayment').textContent = `₱${Number(car.downpayment).toLocaleString()} (ALL IN)`;
+      const downpaymentFormatted = typeof car.downpayment === 'number'
+        ? `₱${car.downpayment.toLocaleString()} (ALL IN)`
+        : `${car.downpayment} (ALL IN)`;
+      document.getElementById('car-downpayment').textContent = downpaymentFormatted;
       document.getElementById('car-stock').textContent = `${car.stock} Unit(s)`;
       document.getElementById('car-fuel').textContent = car.fuel_type;
       document.getElementById('car-engine').textContent = car.engine;
@@ -517,16 +706,71 @@
       document.getElementById('finance-60').textContent = car.finance_60;
       document.getElementById('car-location').textContent = car.location;
 
-      // Photo
+      // Setup Photo Gallery (Up to 8 photos supported)
       const photoImg = document.getElementById('vehicle-photo');
       const placeholder = document.getElementById('image-placeholder');
-      if (car.photo && car.photo.trim() !== '') {
-        photoImg.src = car.photo;
+      const countBadge = document.getElementById('photo-count-badge');
+      const galleryStrip = document.getElementById('photo-gallery-strip');
+
+      let photos = [];
+      if (Array.isArray(car.photos) && car.photos.length > 0) {
+        photos = car.photos.filter(p => typeof p === 'string' && p.trim() !== '');
+      } else if (car.photo && typeof car.photo === 'string' && car.photo.trim() !== '') {
+        photos = [car.photo];
+      }
+
+      currentVehiclePhotos = photos;
+      currentPhotoIndex = 0;
+
+      if (photos.length > 0) {
+        photoImg.src = photos[0];
         photoImg.classList.remove('hidden');
         placeholder.classList.add('hidden');
+
+        if (photos.length > 1) {
+          // Show prev/next arrows and counter badge
+          if (prevBtn) { prevBtn.classList.remove('hidden'); prevBtn.classList.add('flex'); }
+          if (nextBtn) { nextBtn.classList.remove('hidden'); nextBtn.classList.add('flex'); }
+          if (countBadge) {
+            countBadge.classList.remove('hidden');
+            countBadge.classList.add('flex');
+            document.getElementById('photo-counter-text').textContent = `1 / ${photos.length}`;
+          }
+
+          // Build thumbnail gallery strip
+          if (galleryStrip) {
+            galleryStrip.innerHTML = '';
+            galleryStrip.classList.remove('hidden');
+
+            photos.forEach((photoSrc, idx) => {
+              const thumbBtn = document.createElement('button');
+              thumbBtn.type = 'button';
+              thumbBtn.className = idx === 0
+                ? 'gallery-thumb-btn flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border-2 border-amber-500 shadow-md ring-2 ring-amber-500/40 transition transform scale-105'
+                : 'gallery-thumb-btn flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden border border-slate-700 opacity-60 hover:opacity-100 hover:border-slate-500 transition';
+              thumbBtn.innerHTML = `<img src="${photoSrc}" alt="Thumbnail ${idx + 1}" class="w-full h-full object-cover">`;
+              thumbBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                setVehiclePhotoIndex(idx);
+              });
+              galleryStrip.appendChild(thumbBtn);
+            });
+          }
+        } else {
+          // Exactly 1 photo
+          if (prevBtn) { prevBtn.classList.add('hidden'); prevBtn.classList.remove('flex'); }
+          if (nextBtn) { nextBtn.classList.add('hidden'); nextBtn.classList.remove('flex'); }
+          if (countBadge) { countBadge.classList.add('hidden'); countBadge.classList.remove('flex'); }
+          if (galleryStrip) { galleryStrip.classList.add('hidden'); galleryStrip.innerHTML = ''; }
+        }
       } else {
+        // No photo: display placeholder
         photoImg.classList.add('hidden');
         placeholder.classList.remove('hidden');
+        if (prevBtn) { prevBtn.classList.add('hidden'); prevBtn.classList.remove('flex'); }
+        if (nextBtn) { nextBtn.classList.add('hidden'); nextBtn.classList.remove('flex'); }
+        if (countBadge) { countBadge.classList.add('hidden'); countBadge.classList.remove('flex'); }
+        if (galleryStrip) { galleryStrip.classList.add('hidden'); galleryStrip.innerHTML = ''; }
       }
 
       // Modal title
@@ -538,20 +782,48 @@
       if (selector) selector.value = car.id;
     }
 
-    // Initialize
-    const initialId = getParamId();
-    renderCar(initialId);
+    // Populate Vehicle Selector dropdown with all active vehicles
+    function initVehicleSelector(activeId) {
+      const selector = document.getElementById('vehicle-selector');
+      if (!selector) return;
 
-    // Selector change
-    const selector = document.getElementById('vehicle-selector');
-    if (selector) {
-      selector.addEventListener('change', function() {
-        const selectedId = parseInt(this.value, 10);
+      const allCars = getAllVehicles();
+      selector.innerHTML = '';
+
+      const carEntries = Object.entries(allCars);
+      if (carEntries.length === 0) {
+        selector.innerHTML = '<option value="">No vehicles available</option>';
+        return;
+      }
+
+      carEntries.forEach(([key, car], index) => {
+        const opt = document.createElement('option');
+        opt.value = key;
+        const displayName = car.name || `${car.make || ''} ${car.model || ''}`.trim();
+        opt.textContent = `${index + 1}. ${displayName}`;
+        if (String(key) === String(activeId)) {
+          opt.selected = true;
+        }
+        selector.appendChild(opt);
+      });
+
+      // Change listener
+      selector.onchange = function() {
+        const selectedId = this.value;
+        if (!selectedId) return;
         const url = new URL(window.location);
         url.searchParams.set('id', selectedId);
         window.history.pushState({}, '', url);
         renderCar(selectedId);
-      });
+      };
+    }
+
+    // Initial load
+    const allCars = getAllVehicles();
+    const initialId = getParamId(allCars);
+    initVehicleSelector(initialId);
+    if (initialId) {
+      renderCar(initialId);
     }
 
     // Mobile nav toggle
@@ -587,6 +859,38 @@
     if (inquiryForm) {
       inquiryForm.addEventListener('submit', (e) => {
         e.preventDefault();
+
+        const carName = document.getElementById('modal-car-name')?.textContent || document.getElementById('car-title')?.textContent || 'Vehicle';
+        const fullName = (document.getElementById('inq-fullname')?.value || '').trim();
+        const phone = (document.getElementById('inq-phone')?.value || '').trim();
+        const email = (document.getElementById('inq-email')?.value || '').trim();
+        const preference = document.getElementById('inq-preference')?.value || 'General Inquiry';
+        const message = (document.getElementById('inq-message')?.value || '').trim();
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' +
+                        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        const newInquiry = {
+          id: 'inq_' + Date.now(),
+          vehicle: carName,
+          fullName: fullName,
+          phone: phone,
+          email: email,
+          preference: preference,
+          message: message,
+          date: dateStr,
+          status: 'New'
+        };
+
+        try {
+          const inquiries = JSON.parse(localStorage.getItem('kreditcars_inquiries') || '[]');
+          inquiries.unshift(newInquiry);
+          localStorage.setItem('kreditcars_inquiries', JSON.stringify(inquiries));
+        } catch (err) {
+          console.error('Error saving inquiry:', err);
+        }
+
         hideModal();
         showToast("Inquiry submitted successfully! A representative will contact you.");
         inquiryForm.reset();

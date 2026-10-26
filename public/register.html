@@ -77,7 +77,7 @@
   </nav>
 
   <!-- CONTENT WRAPPER -->
-  <main class="flex-1 max-w-6xl mx-auto px-6 w-full space-y-6 pb-20">
+  <main class="flex-1 max-w-[1400px] mx-auto px-4 sm:px-6 w-full space-y-6 pb-20">
 
     <!-- PAGE TITLE -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-800/80 pb-5">
@@ -96,10 +96,10 @@
     <div id="flash-banner" class="hidden"></div>
 
     <!-- CARD GRID -->
-    <div class="grid lg:grid-cols-12 gap-8 items-start">
+    <div class="grid lg:grid-cols-12 gap-6 items-start">
 
-      <!-- CREATE USER CARD (Col 1 to 5) -->
-      <div class="lg:col-span-5 bg-[#081421] border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl">
+      <!-- CREATE USER CARD (Col 1 to 4) -->
+      <div class="lg:col-span-4 bg-[#081421] border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl">
         <div class="flex items-center gap-2.5 mb-6">
           <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
@@ -148,8 +148,8 @@
         </form>
       </div>
 
-      <!-- EXISTING USERS CARD (Col 6 to 12) -->
-      <div class="lg:col-span-7 bg-[#081421] border border-slate-800 rounded-2xl p-6 md:p-8 shadow-xl">
+      <!-- EXISTING USERS CARD (Col 5 to 12 - Wider Container) -->
+      <div class="lg:col-span-8 bg-[#081421] border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl">
         <div class="flex items-center justify-between mb-6">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold">
@@ -166,40 +166,40 @@
           <table class="w-full text-sm">
             <thead class="text-slate-400 bg-slate-900/80 border-b border-slate-800 uppercase text-xs">
               <tr>
-                <th class="py-3 px-3 text-left font-semibold">Full Name</th>
-                <th class="py-3 px-3 text-left font-semibold">Username</th>
-                <th class="py-3 px-3 text-left font-semibold">Email</th>
-                <th class="py-3 px-3 text-left font-semibold">Role</th>
-                <th class="py-3 px-3 text-left font-semibold">Created</th>
-                <th class="py-3 px-3 text-center font-semibold">Action</th>
+                <th class="py-3 px-3.5 text-left font-semibold whitespace-nowrap">Full Name</th>
+                <th class="py-3 px-3 text-left font-semibold whitespace-nowrap">Username</th>
+                <th class="py-3 px-3 text-left font-semibold whitespace-nowrap">Email</th>
+                <th class="py-3 px-3 text-left font-semibold whitespace-nowrap">Role</th>
+                <th class="py-3 px-3 text-left font-semibold whitespace-nowrap">Created</th>
+                <th class="py-3 px-3 text-center font-semibold whitespace-nowrap">Action</th>
               </tr>
             </thead>
 
             <tbody id="users-tbody" class="divide-y divide-slate-800/80">
               <!-- User 1 -->
               <tr class="user-row hover:bg-slate-900/40 transition" data-id="1">
-                <td class="py-3 px-3 font-medium text-white">Jorge Admin</td>
-                <td class="py-3 px-3 text-slate-300">admin_jorge</td>
-                <td class="py-3 px-3 text-cyan-400">jorge.admin@kreditcars.com</td>
-                <td class="py-3 px-3">
+                <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">Jorge Admin</td>
+                <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">admin_jorge</td>
+                <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">jorge.admin@kreditcars.com</td>
+                <td class="py-3 px-3 whitespace-nowrap">
                   <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">Admin</span>
                 </td>
-                <td class="py-3 px-3 text-slate-400 text-xs">Oct 15, 2026</td>
-                <td class="py-3 px-3 text-center">
+                <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">Oct 15, 2026</td>
+                <td class="py-3 px-3 text-center whitespace-nowrap">
                   <span class="text-slate-600 text-xs italic" title="Logged in account cannot be deleted">Active</span>
                 </td>
               </tr>
 
               <!-- User 2 -->
               <tr class="user-row hover:bg-slate-900/40 transition" data-id="2">
-                <td class="py-3 px-3 font-medium text-white">Maria Santos</td>
-                <td class="py-3 px-3 text-slate-300">maria.santos</td>
-                <td class="py-3 px-3 text-cyan-400">maria.santos@kreditcars.com</td>
-                <td class="py-3 px-3">
+                <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">Maria Santos</td>
+                <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">maria.santos</td>
+                <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">maria.santos@kreditcars.com</td>
+                <td class="py-3 px-3 whitespace-nowrap">
                   <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>
                 </td>
-                <td class="py-3 px-3 text-slate-400 text-xs">Oct 18, 2026</td>
-                <td class="py-3 px-3 text-center">
+                <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">Oct 18, 2026</td>
+                <td class="py-3 px-3 text-center whitespace-nowrap">
                   <button type="button" onclick="deleteUser(2, 'Maria Santos')" class="bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">
                     Delete
                   </button>
@@ -208,14 +208,14 @@
 
               <!-- User 3 -->
               <tr class="user-row hover:bg-slate-900/40 transition" data-id="3">
-                <td class="py-3 px-3 font-medium text-white">Robert Diaz</td>
-                <td class="py-3 px-3 text-slate-300">robert.diaz</td>
-                <td class="py-3 px-3 text-cyan-400">robert.diaz@kreditcars.com</td>
-                <td class="py-3 px-3">
+                <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">Robert Diaz</td>
+                <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">robert.diaz</td>
+                <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">robert.diaz@kreditcars.com</td>
+                <td class="py-3 px-3 whitespace-nowrap">
                   <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>
                 </td>
-                <td class="py-3 px-3 text-slate-400 text-xs">Oct 19, 2026</td>
-                <td class="py-3 px-3 text-center">
+                <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">Oct 19, 2026</td>
+                <td class="py-3 px-3 text-center whitespace-nowrap">
                   <button type="button" onclick="deleteUser(3, 'Robert Diaz')" class="bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">
                     Delete
                   </button>
@@ -224,14 +224,14 @@
 
               <!-- User 4 -->
               <tr class="user-row hover:bg-slate-900/40 transition" data-id="4">
-                <td class="py-3 px-3 font-medium text-white">Angela Reyes</td>
-                <td class="py-3 px-3 text-slate-300">angela.reyes</td>
-                <td class="py-3 px-3 text-cyan-400">angela.reyes@kreditcars.com</td>
-                <td class="py-3 px-3">
+                <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">Angela Reyes</td>
+                <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">angela.reyes</td>
+                <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">angela.reyes@kreditcars.com</td>
+                <td class="py-3 px-3 whitespace-nowrap">
                   <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>
                 </td>
-                <td class="py-3 px-3 text-slate-400 text-xs">Oct 20, 2026</td>
-                <td class="py-3 px-3 text-center">
+                <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">Oct 20, 2026</td>
+                <td class="py-3 px-3 text-center whitespace-nowrap">
                   <button type="button" onclick="deleteUser(4, 'Angela Reyes')" class="bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">
                     Delete
                   </button>
@@ -512,12 +512,12 @@
         newRow.className = 'user-row hover:bg-slate-900/40 transition';
         newRow.setAttribute('data-id', currentId);
         newRow.innerHTML = `
-          <td class="py-3 px-3 font-medium text-white">${fullname}</td>
-          <td class="py-3 px-3 text-slate-300">${username}</td>
-          <td class="py-3 px-3 text-cyan-400">${email}</td>
-          <td class="py-3 px-3">${roleBadge}</td>
-          <td class="py-3 px-3 text-slate-400 text-xs">${today}</td>
-          <td class="py-3 px-3 text-center">
+          <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">${fullname}</td>
+          <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">${username}</td>
+          <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">${email}</td>
+          <td class="py-3 px-3 whitespace-nowrap">${roleBadge}</td>
+          <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">${today}</td>
+          <td class="py-3 px-3 text-center whitespace-nowrap">
             <button type="button" onclick="deleteUser(${currentId}, '${fullname.replace(/'/g, "\\'")}')" class="bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">
               Delete
             </button>

@@ -13,22 +13,6 @@
     @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
     main { padding-top: calc(var(--nav-h) + 1rem); }
   </style>
-  <script>
-    // Immediate anti-flash check for deleted customers before rendering
-    (function() {
-      try {
-        var deleted = JSON.parse(localStorage.getItem('kreditcars_deleted_customers') || '[]');
-        if (Array.isArray(deleted) && deleted.length > 0) {
-          var style = document.createElement('style');
-          style.id = 'anti-flash-deleted-customers';
-          style.textContent = deleted.map(function(id) {
-            return '.customer-row[data-id="' + id + '"] { display: none !important; }';
-          }).join(' ');
-          document.head.appendChild(style);
-        }
-      } catch (e) {}
-    })();
-  </script>
 </head>
 <body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
 
@@ -84,7 +68,7 @@
   <main class="pt-24 max-w-7xl mx-auto px-6 pb-20 w-full flex-1">
     <div class="bg-[#07101a]/60 border border-slate-800 rounded-xl p-4 md:p-6 shadow-xl">
 
-      <!-- Header row: Title + Actions (Matching index.html & staff.html) -->
+      <!-- Header row: Title + Actions -->
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
         <div>
           <h1 class="text-2xl md:text-3xl font-bold text-white italic">Customer <span class="text-amber-500">Directory</span></h1>
@@ -92,9 +76,13 @@
         </div>
 
         <div class="flex items-center gap-3">
+          <button id="btn-open-inquiry-modal-top" type="button" class="inline-flex items-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-black font-bold uppercase text-xs px-3.5 py-1.5 rounded transition shadow">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span>Submit Inquiry</span>
+          </button>
           <span class="inline-flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 rounded-full text-xs font-semibold">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span id="active-count-text">4 Active Customers</span>
+            <span id="active-count-text">0 Active Customers</span>
           </span>
         </div>
       </div>
@@ -103,53 +91,41 @@
       <div id="flash-container" class="hidden mb-6"></div>
 
       <div class="md:flex md:gap-6">
-        <!-- LEFT: compact notifications (small column) -->
-        <aside class="w-full md:w-1/4">
+        <!-- LEFT: compact notifications container -->
+        <aside class="w-full md:w-1/3 lg:w-1/4">
           <div class="bg-black/40 border border-slate-800 rounded-xl p-4 shadow-md">
-            <div class="flex items-center justify-between mb-3">
-              <h2 class="text-sm font-semibold text-white">Notifications</h2>
-              <span class="text-[10px] text-amber-500 font-mono font-bold uppercase tracking-wider">Live</span>
+            <div class="flex items-center justify-between mb-3 pb-2 border-b border-slate-800/80">
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-semibold text-white">Notifications</h2>
+                <span id="notifications-count-badge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">0</span>
+              </div>
+              <span class="text-[10px] text-emerald-400 font-mono font-bold uppercase tracking-wider flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                Live
+              </span>
             </div>
 
+            <!-- Inquiries List Container -->
             <div class="space-y-3" id="requests-list">
-              <!-- Request 1 -->
-              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition" id="req-1">
-                <div class="flex items-start justify-between gap-2">
-                  <div class="flex-1">
-                    <div class="uppercase text-[10px] text-slate-400 font-semibold tracking-wider">Requested</div>
-                    <div class="font-medium text-sm text-white mt-0.5">Juan Garcia</div>
-                    <div class="text-[11px] text-slate-400 mt-0.5">+63 915 889 1234 — Financing (36 mo)</div>
-                    <div class="text-[11px] text-slate-500 mt-1">2026-10-20 14:22</div>
-                  </div>
+              <!-- Dynamically populated from submitted inquiries -->
+            </div>
 
-                  <button type="button" onclick="acceptCustomerRequest('req-1', 'Juan', 'Garcia', '+63 915 889 1234', '36 Months Financing')" class="flex-shrink-0 bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
-                    <span class="inline-block skew-x-6">Accept</span>
-                  </button>
-                </div>
+            <!-- Empty State for Notifications Container -->
+            <div id="notifications-empty" class="text-center py-8 text-slate-500 text-xs">
+              <div class="w-10 h-10 mx-auto mb-2 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
               </div>
-
-              <!-- Request 2 -->
-              <div class="bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition" id="req-2">
-                <div class="flex items-start justify-between gap-2">
-                  <div class="flex-1">
-                    <div class="uppercase text-[10px] text-slate-400 font-semibold tracking-wider">Requested</div>
-                    <div class="font-medium text-sm text-white mt-0.5">Elena Rodriguez</div>
-                    <div class="text-[11px] text-slate-400 mt-0.5">+63 922 456 7890 — Trade-in</div>
-                    <div class="text-[11px] text-slate-500 mt-1">2026-10-21 09:15</div>
-                  </div>
-
-                  <button type="button" onclick="acceptCustomerRequest('req-2', 'Elena', 'Rodriguez', '+63 922 456 7890', 'Trade-in Assessment')" class="flex-shrink-0 bg-amber-500 px-2.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition">
-                    <span class="inline-block skew-x-6">Accept</span>
-                  </button>
-                </div>
-              </div>
+              <p class="font-bold text-slate-400 mb-0.5">No Pending Inquiries</p>
+              <p class="text-[11px] text-slate-500 max-w-[200px] mx-auto">Submit an inquiry on any vehicle or click "+ Submit Inquiry" above.</p>
             </div>
 
           </div>
         </aside>
 
-        <!-- RIGHT: wide customer listing (3/4 width on desktop) -->
-        <section class="w-full md:w-3/4 mt-6 md:mt-0">
+        <!-- RIGHT: wide customer listing container (Customers container) -->
+        <section class="w-full md:w-2/3 lg:w-3/4 mt-6 md:mt-0">
           <div class="bg-black/40 border border-slate-800 rounded-xl p-4 shadow-md">
             <div class="flex items-center justify-between gap-4 mb-4">
               <h2 class="text-sm font-semibold text-white">Customers</h2>
@@ -175,56 +151,8 @@
                   </tr>
                 </thead>
                 <tbody id="customers-table-body" class="divide-y divide-slate-800/80">
-                  <tr class="customer-row hover:bg-slate-800/30 transition" data-id="101" data-name="Carlos Mendoza">
-                    <td class="px-4 py-3 align-middle text-slate-400 font-mono">101</td>
-                    <td class="px-4 py-3 align-middle font-medium text-white">Carlos</td>
-                    <td class="px-4 py-3 align-middle text-slate-300">Mendoza</td>
-                    <td class="px-4 py-3 align-middle text-slate-400">+63 917 111 2233</td>
-                    <td class="px-4 py-3 align-middle text-cyan-400">Direct Purchase</td>
-                    <td class="px-4 py-3 align-middle text-center">
-                      <button type="button" onclick="confirmDeleteCustomer(101, 'Carlos Mendoza')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                  <tr class="customer-row hover:bg-slate-800/30 transition" data-id="102" data-name="Angelica Ramos">
-                    <td class="px-4 py-3 align-middle text-slate-400 font-mono">102</td>
-                    <td class="px-4 py-3 align-middle font-medium text-white">Angelica</td>
-                    <td class="px-4 py-3 align-middle text-slate-300">Ramos</td>
-                    <td class="px-4 py-3 align-middle text-slate-400">+63 928 222 3344</td>
-                    <td class="px-4 py-3 align-middle text-cyan-400">48 Months Financing</td>
-                    <td class="px-4 py-3 align-middle text-center">
-                      <button type="button" onclick="confirmDeleteCustomer(102, 'Angelica Ramos')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                  <tr class="customer-row hover:bg-slate-800/30 transition" data-id="103" data-name="Michael Tan">
-                    <td class="px-4 py-3 align-middle text-slate-400 font-mono">103</td>
-                    <td class="px-4 py-3 align-middle font-medium text-white">Michael</td>
-                    <td class="px-4 py-3 align-middle text-slate-300">Tan</td>
-                    <td class="px-4 py-3 align-middle text-slate-400">+63 919 333 4455</td>
-                    <td class="px-4 py-3 align-middle text-cyan-400">Consignment</td>
-                    <td class="px-4 py-3 align-middle text-center">
-                      <button type="button" onclick="confirmDeleteCustomer(103, 'Michael Tan')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                  <tr class="customer-row hover:bg-slate-800/30 transition" data-id="104" data-name="Patricia Bautista">
-                    <td class="px-4 py-3 align-middle text-slate-400 font-mono">104</td>
-                    <td class="px-4 py-3 align-middle font-medium text-white">Patricia</td>
-                    <td class="px-4 py-3 align-middle text-slate-300">Bautista</td>
-                    <td class="px-4 py-3 align-middle text-slate-400">+63 927 444 5566</td>
-                    <td class="px-4 py-3 align-middle text-cyan-400">36 Months Financing</td>
-                    <td class="px-4 py-3 align-middle text-center">
-                      <button type="button" onclick="confirmDeleteCustomer(104, 'Patricia Bautista')" class="px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                  <!-- Empty State Row (Hidden when customers exist) -->
-                  <tr id="empty-state-row" class="hidden">
+                  <!-- Empty State Row (Shown when no customers exist) -->
+                  <tr id="empty-state-row">
                     <td colspan="6" class="py-12 text-center text-slate-400">
                       <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,10 +160,7 @@
                         </svg>
                       </div>
                       <p class="font-bold text-white text-sm mb-1">No Active Customers</p>
-                      <p class="text-xs text-slate-500 max-w-xs mx-auto mb-3">All customer records have been deleted or archived.</p>
-                      <button id="reset-customers-btn" type="button" onclick="resetCustomerCatalog()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-3 py-1.5 uppercase font-semibold text-xs rounded transition border border-slate-700">
-                        Reset Demo Customers
-                      </button>
+                      <p class="text-xs text-slate-500 max-w-xs mx-auto mb-3">Accept pending inquiries from the Notifications container to add customer records.</p>
                     </td>
                   </tr>
                 </tbody>
@@ -247,6 +172,62 @@
 
     </div>
   </main>
+
+  <!-- SUBMIT INQUIRY MODAL -->
+  <div id="inquiry-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0B1320] border border-slate-800 rounded-xl max-w-lg w-full p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+      <button id="close-inquiry-modal" type="button" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold leading-none p-1">&times;</button>
+
+      <div class="mb-4">
+        <h3 class="text-xl font-bold text-white italic">Submit Customer <span class="text-amber-500">Inquiry</span></h3>
+        <p class="text-xs text-slate-400 mt-1">Information entered here will go to the Notifications container.</p>
+      </div>
+
+      <form id="inquiry-modal-form" class="space-y-4">
+        <div>
+          <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Full Name</label>
+          <input id="inq-fullname" type="text" required placeholder="e.g. Juan Dela Cruz" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Contact Phone</label>
+            <input id="inq-phone" type="tel" required placeholder="0917-000-0000" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Email</label>
+            <input id="inq-email" type="email" placeholder="you@email.com" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Vehicle of Interest</label>
+          <input id="inq-vehicle" type="text" placeholder="e.g. Toyota Vios 1.5 G" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Payment / Financing Preference</label>
+          <select id="inq-preference" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500">
+            <option value="Direct Purchase (Cash)">Direct Purchase (Cash)</option>
+            <option value="Financing - 36 Months Term">Financing - 36 Months Term</option>
+            <option value="Financing - 48 Months Term">Financing - 48 Months Term</option>
+            <option value="Financing - 60 Months Term">Financing - 60 Months Term</option>
+            <option value="Vehicle Trade-In Assessment">Vehicle Trade-In Assessment</option>
+            <option value="Consignment Inquiry">Consignment Inquiry</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Questions or Message (Optional)</label>
+          <textarea id="inq-message" rows="3" placeholder="Tell us about your requirements or questions..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white text-sm focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-black font-bold uppercase py-2.5 rounded-lg text-sm transition shadow-lg">
+          Submit Inquiry
+        </button>
+      </form>
+    </div>
+  </div>
 
   <!-- CONFIRMATION POP-OUT MODAL -->
   <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -334,10 +315,106 @@
   </footer>
 
   <script>
-    // mobile menu toggle
+    // Clean up any old demo state from previous sessions to ensure customer table starts clean
+    try {
+      localStorage.removeItem('kreditcars_deleted_customers');
+      localStorage.removeItem('kreditcars_custom_customers');
+      localStorage.removeItem('kreditcars_accepted_requests');
+    } catch (e) {}
+
+    // Storage keys
+    const STORAGE_KEY_INQUIRIES = 'kreditcars_inquiries';
+    const STORAGE_KEY_CUSTOMERS = 'kreditcars_customers_list';
+
+    // Helper: Escape HTML string
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Helper: Split full name into first and last name
+    function splitName(fullName) {
+      const parts = (fullName || '').trim().split(/\s+/);
+      if (parts.length === 0 || !parts[0]) return { firstName: 'Customer', lastName: '' };
+      if (parts.length === 1) return { firstName: parts[0], lastName: '-' };
+      const firstName = parts[0];
+      const lastName = parts.slice(1).join(' ');
+      return { firstName, lastName };
+    }
+
+    // Storage accessors
+    function getInquiries() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_INQUIRIES);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveInquiries(inqs) {
+      try {
+        localStorage.setItem(STORAGE_KEY_INQUIRIES, JSON.stringify(inqs));
+      } catch (err) {
+        console.error('Error saving inquiries:', err);
+      }
+    }
+
+    function addInquiry(inq) {
+      const inqs = getInquiries();
+      inqs.unshift(inq);
+      saveInquiries(inqs);
+    }
+
+    function removeInquiry(id) {
+      const inqs = getInquiries().filter(inq => String(inq.id) !== String(id));
+      saveInquiries(inqs);
+    }
+
+    function getCustomers() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_CUSTOMERS);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveCustomers(custs) {
+      try {
+        localStorage.setItem(STORAGE_KEY_CUSTOMERS, JSON.stringify(custs));
+      } catch (err) {
+        console.error('Error saving customers:', err);
+      }
+    }
+
+    function addCustomer(cust) {
+      const custs = getCustomers();
+      custs.push(cust);
+      saveCustomers(custs);
+    }
+
+    function removeCustomer(id) {
+      const custs = getCustomers().filter(c => String(c.id) !== String(id));
+      saveCustomers(custs);
+    }
+
+    function generateNextCustomerId() {
+      const custs = getCustomers();
+      if (custs.length === 0) return 101;
+      const maxId = custs.reduce((max, c) => Math.max(max, Number(c.id) || 0), 100);
+      return maxId + 1;
+    }
+
+    // Mobile menu toggle
     const mobileBtn = document.getElementById('mobile-btn');
     if (mobileBtn) {
-      mobileBtn.addEventListener('click', function(){
+      mobileBtn.addEventListener('click', function() {
         const menu = document.getElementById('mobile-menu');
         const expanded = this.getAttribute('aria-expanded') === 'true';
         this.setAttribute('aria-expanded', (!expanded).toString());
@@ -434,161 +511,206 @@
       });
     }
 
-    // Storage keys for persistent customers
-    const STORAGE_KEY_DELETED = 'kreditcars_deleted_customers';
-    const STORAGE_KEY_CUSTOM = 'kreditcars_custom_customers';
-    const STORAGE_KEY_ACCEPTED_REQS = 'kreditcars_accepted_requests';
+    // Render Notifications Container (Inquiries)
+    function renderInquiries() {
+      const inquiries = getInquiries();
+      const list = document.getElementById('requests-list');
+      const emptyNotif = document.getElementById('notifications-empty');
+      const countBadge = document.getElementById('notifications-count-badge');
 
-    function getDeletedCustomerIds() {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY_DELETED);
-        return data ? JSON.parse(data) : [];
-      } catch (err) {
-        return [];
+      if (countBadge) {
+        countBadge.textContent = inquiries.length;
       }
-    }
 
-    function saveDeletedCustomerId(id) {
-      try {
-        const deleted = getDeletedCustomerIds();
-        const strId = String(id);
-        if (!deleted.includes(strId)) {
-          deleted.push(strId);
-          localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
-        }
-      } catch (err) {
-        console.error('Error saving deleted customer to localStorage:', err);
+      if (!list) return;
+      list.innerHTML = '';
+
+      if (inquiries.length === 0) {
+        if (emptyNotif) emptyNotif.classList.remove('hidden');
+        return;
+      } else {
+        if (emptyNotif) emptyNotif.classList.add('hidden');
       }
-    }
 
-    function getCustomCustomers() {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY_CUSTOM);
-        return data ? JSON.parse(data) : [];
-      } catch (err) {
-        return [];
-      }
-    }
+      inquiries.forEach(inq => {
+        const card = document.createElement('div');
+        card.className = 'bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition';
+        card.id = inq.id;
 
-    function saveCustomCustomer(cust) {
-      try {
-        const custom = getCustomCustomers();
-        custom.push(cust);
-        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
-      } catch (err) {
-        console.error('Error saving custom customer to localStorage:', err);
-      }
-    }
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1 mb-1">
+                <span class="uppercase text-[9px] text-amber-400 font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 truncate">
+                  ${escapeHtml(inq.vehicle || 'Vehicle Inquiry')}
+                </span>
+                <span class="text-[10px] text-slate-500 font-mono flex-shrink-0">${escapeHtml(inq.date || '')}</span>
+              </div>
+              <div class="font-bold text-sm text-white truncate">${escapeHtml(inq.fullName)}</div>
+              <div class="text-[11px] text-slate-300 mt-1 flex items-center gap-1.5">
+                <span class="text-slate-500">Phone:</span>
+                <span class="font-mono text-slate-200">${escapeHtml(inq.phone)}</span>
+              </div>
+              ${inq.email ? `
+                <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5 truncate">
+                  <span class="text-slate-500">Email:</span>
+                  <span class="text-slate-300">${escapeHtml(inq.email)}</span>
+                </div>
+              ` : ''}
+              <div class="text-[11px] text-cyan-400 font-medium mt-1.5 flex items-center gap-1">
+                <span class="text-slate-500 text-[10px] uppercase font-mono">Option:</span>
+                <span>${escapeHtml(inq.preference || 'Direct Purchase')}</span>
+              </div>
+              ${inq.message ? `
+                <div class="text-[11px] text-slate-400 mt-2 italic bg-slate-900/70 p-2 rounded border border-slate-800/80 break-words">
+                  "${escapeHtml(inq.message)}"
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          <div class="flex items-center justify-end gap-2 mt-3 pt-2.5 border-t border-slate-800/80">
+            <button type="button" class="btn-decline-inq px-2.5 py-1 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded text-[11px] font-semibold transition">
+              Dismiss
+            </button>
+            <button type="button" class="btn-accept-inq bg-amber-500 px-3.5 py-1 text-black font-bold uppercase transform -skew-x-6 hover:bg-amber-400 text-[11px] rounded transition shadow">
+              <span class="inline-block skew-x-6">Accept</span>
+            </button>
+          </div>
+        `;
 
-    function removeCustomCustomer(id) {
-      try {
-        const custom = getCustomCustomers().filter(c => String(c.id) !== String(id));
-        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
-      } catch (err) {
-        console.error('Error removing custom customer from localStorage:', err);
-      }
-    }
-
-    function getAcceptedRequests() {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY_ACCEPTED_REQS);
-        return data ? JSON.parse(data) : [];
-      } catch (err) {
-        return [];
-      }
-    }
-
-    function saveAcceptedRequest(reqId) {
-      try {
-        const reqs = getAcceptedRequests();
-        if (!reqs.includes(reqId)) {
-          reqs.push(reqId);
-          localStorage.setItem(STORAGE_KEY_ACCEPTED_REQS, JSON.stringify(reqs));
-        }
-      } catch (err) {
-        console.error('Error saving accepted request:', err);
-      }
-    }
-
-    function createCustomerRowElement(cust) {
-      const tr = document.createElement('tr');
-      tr.className = 'customer-row hover:bg-slate-800/30 transition';
-      tr.setAttribute('data-id', cust.id);
-      tr.setAttribute('data-name', cust.fullName);
-      tr.innerHTML = `
-        <td class="px-4 py-3 align-middle text-slate-400 font-mono">${cust.id}</td>
-        <td class="px-4 py-3 align-middle font-medium text-white">${cust.firstName}</td>
-        <td class="px-4 py-3 align-middle text-slate-300">${cust.lastName}</td>
-        <td class="px-4 py-3 align-middle text-slate-400">${cust.phone}</td>
-        <td class="px-4 py-3 align-middle text-cyan-400">${cust.option}</td>
-        <td class="px-4 py-3 align-middle text-center">
-          <button type="button" class="btn-del-cust px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
-            Delete
-          </button>
-        </td>
-      `;
-
-      const delBtn = tr.querySelector('.btn-del-cust');
-      if (delBtn) {
-        delBtn.addEventListener('click', function() {
-          confirmDeleteCustomer(cust.id, cust.fullName);
+        // Handle Accept click
+        card.querySelector('.btn-accept-inq').addEventListener('click', function() {
+          confirmAcceptInquiry(inq);
         });
-      }
 
-      return tr;
+        // Handle Dismiss click
+        card.querySelector('.btn-decline-inq').addEventListener('click', function() {
+          confirmDismissInquiry(inq);
+        });
+
+        list.appendChild(card);
+      });
     }
 
-    // Update active count
-    function updateActiveCount() {
-      const rows = document.querySelectorAll('.customer-row');
-      const count = rows.length;
-      const countText = document.getElementById('active-count-text');
+    // Accept Inquiry: moves from Notifications container to Customers container
+    function confirmAcceptInquiry(inq) {
+      showConfirmModal({
+        title: 'Accept Inquiry',
+        message: `Accept inquiry from <span class="font-bold text-white">${escapeHtml(inq.fullName)}</span> and add to customer records?`,
+        confirmText: 'Yes, Accept',
+        isDanger: false,
+        onConfirm: function() {
+          // Remove from inquiries
+          removeInquiry(inq.id);
+
+          // Add to customer directory
+          const { firstName, lastName } = splitName(inq.fullName);
+          const newCust = {
+            id: generateNextCustomerId(),
+            firstName: firstName,
+            lastName: lastName,
+            fullName: inq.fullName,
+            phone: inq.phone,
+            email: inq.email || '',
+            option: inq.preference || 'Direct Purchase',
+            vehicle: inq.vehicle || '',
+            dateAdded: new Date().toISOString()
+          };
+
+          addCustomer(newCust);
+
+          // Re-render both containers
+          renderInquiries();
+          renderCustomers();
+
+          showFlash('success', `Inquiry from ${inq.fullName} accepted and added to the Customers container as Customer #${newCust.id}!`);
+        }
+      });
+    }
+
+    // Dismiss Inquiry
+    function confirmDismissInquiry(inq) {
+      showConfirmModal({
+        title: 'Dismiss Inquiry',
+        message: `Dismiss inquiry from <span class="font-bold text-white">${escapeHtml(inq.fullName)}</span>? This inquiry will be removed from Notifications.`,
+        confirmText: 'Yes, Dismiss',
+        isDanger: true,
+        onConfirm: function() {
+          removeInquiry(inq.id);
+          renderInquiries();
+          showFlash('success', `Inquiry from ${inq.fullName} was dismissed.`);
+        }
+      });
+    }
+
+    // Render Customers Container (Table)
+    function renderCustomers() {
+      const custs = getCustomers();
+      const tbody = document.getElementById('customers-table-body');
       const emptyRow = document.getElementById('empty-state-row');
+      const countText = document.getElementById('active-count-text');
 
       if (countText) {
-        countText.textContent = `${count} Active Customer${count === 1 ? '' : 's'}`;
+        countText.textContent = `${custs.length} Active Customer${custs.length === 1 ? '' : 's'}`;
       }
 
-      if (emptyRow) {
-        if (count === 0) {
-          emptyRow.classList.remove('hidden');
-        } else {
-          emptyRow.classList.add('hidden');
-        }
+      if (!tbody) return;
+
+      // Clear existing customer rows while preserving empty-state-row
+      tbody.querySelectorAll('.customer-row').forEach(row => row.remove());
+
+      if (custs.length === 0) {
+        if (emptyRow) emptyRow.classList.remove('hidden');
+        return;
       }
+
+      if (emptyRow) emptyRow.classList.add('hidden');
+
+      custs.forEach(cust => {
+        const tr = document.createElement('tr');
+        tr.className = 'customer-row hover:bg-slate-800/30 transition';
+        tr.setAttribute('data-id', cust.id);
+        tr.setAttribute('data-name', cust.fullName || `${cust.firstName} ${cust.lastName}`);
+        tr.innerHTML = `
+          <td class="px-4 py-3 align-middle text-slate-400 font-mono">${cust.id}</td>
+          <td class="px-4 py-3 align-middle font-medium text-white">${escapeHtml(cust.firstName)}</td>
+          <td class="px-4 py-3 align-middle text-slate-300">${escapeHtml(cust.lastName)}</td>
+          <td class="px-4 py-3 align-middle text-slate-400">${escapeHtml(cust.phone)}</td>
+          <td class="px-4 py-3 align-middle text-cyan-400">${escapeHtml(cust.option)}</td>
+          <td class="px-4 py-3 align-middle text-center">
+            <button type="button" class="btn-del-cust px-2.5 py-1 bg-red-600/80 hover:bg-red-600 text-white rounded text-xs font-semibold transition" title="Delete customer">
+              Delete
+            </button>
+          </td>
+        `;
+
+        const delBtn = tr.querySelector('.btn-del-cust');
+        if (delBtn) {
+          delBtn.addEventListener('click', function() {
+            confirmDeleteCustomer(cust.id, cust.fullName || `${cust.firstName} ${cust.lastName}`);
+          });
+        }
+
+        tbody.appendChild(tr);
+      });
     }
 
     // Confirm Delete Customer
     function confirmDeleteCustomer(id, name) {
-      const row = document.querySelector(`.customer-row[data-id="${id}"]`);
       showConfirmModal({
         title: 'Delete Customer',
-        message: `Delete customer record for <span class="font-bold text-white">${name || '#' + id}</span>? This action cannot be undone.`,
+        message: `Delete customer record for <span class="font-bold text-white">${escapeHtml(name || '#' + id)}</span>? This action cannot be undone.`,
         confirmText: 'Yes, Delete',
         isDanger: true,
         onConfirm: function() {
-          // 1. Permanently record deletion in localStorage so it stays deleted across refreshes/page visits
-          saveDeletedCustomerId(id);
-          removeCustomCustomer(id);
-
-          // 2. Animate and remove from DOM
-          if (row) {
-            row.style.transition = 'all 0.3s ease';
-            row.style.opacity = '0';
-            setTimeout(() => {
-              row.remove();
-              updateActiveCount();
-            }, 300);
-          } else {
-            updateActiveCount();
-          }
-
+          removeCustomer(id);
+          renderCustomers();
           showFlash('success', `Customer #${id} (${name}) was removed successfully.`);
         }
       });
     }
 
-    // Delete form submission by ID
+    // Delete form submission by ID input
     const deleteForm = document.getElementById('delete-form');
     if (deleteForm) {
       deleteForm.addEventListener('submit', function(e) {
@@ -597,128 +719,88 @@
         const idVal = idInput ? idInput.value.trim() : '';
         if (!idVal) return;
 
-        const row = document.querySelector(`.customer-row[data-id="${idVal}"]`);
-        const name = row ? row.getAttribute('data-name') : `Customer #${idVal}`;
+        const custs = getCustomers();
+        const cust = custs.find(c => String(c.id) === String(idVal));
 
-        if (!row) {
+        if (!cust) {
           showFlash('danger', `Customer with ID #${idVal} not found.`);
           return;
         }
 
-        confirmDeleteCustomer(idVal, name);
+        confirmDeleteCustomer(cust.id, cust.fullName || `${cust.firstName} ${cust.lastName}`);
         deleteForm.reset();
       });
     }
 
-    // Accept Customer Request from Sidebar
-    let nextId = 105;
-    function acceptCustomerRequest(reqId, firstName, lastName, phone, option) {
-      const fullName = `${firstName} ${lastName}`;
-      showConfirmModal({
-        title: 'Accept Request',
-        message: `Accept request from <span class="font-bold text-white">${fullName}</span> and add to customer records?`,
-        confirmText: 'Yes, Accept',
-        isDanger: false,
-        onConfirm: function() {
-          const card = document.getElementById(reqId);
-          if (card) {
-            card.style.transition = 'all 0.3s ease';
-            card.style.opacity = '0';
-            setTimeout(() => card.remove(), 300);
-          }
+    // Inquiry Modal Controls
+    const openInqBtnTop = document.getElementById('btn-open-inquiry-modal-top');
+    const inqModal = document.getElementById('inquiry-modal');
+    const closeInqModal = document.getElementById('close-inquiry-modal');
+    const inqForm = document.getElementById('inquiry-modal-form');
 
-          saveAcceptedRequest(reqId);
+    function openInquiryModal() {
+      if (inqModal) inqModal.classList.remove('hidden');
+    }
+    function hideInquiryModal() {
+      if (inqModal) inqModal.classList.add('hidden');
+    }
 
-          const newCust = {
-            id: nextId,
-            firstName: firstName,
-            lastName: lastName,
-            fullName: fullName,
-            phone: phone,
-            option: option
-          };
-
-          saveCustomCustomer(newCust);
-
-          const tbody = document.getElementById('customers-table-body');
-          const emptyRow = document.getElementById('empty-state-row');
-          if (tbody) {
-            const tr = createCustomerRowElement(newCust);
-            if (emptyRow) {
-              tbody.insertBefore(tr, emptyRow);
-            } else {
-              tbody.appendChild(tr);
-            }
-            nextId++;
-            updateActiveCount();
-          }
-
-          showFlash('success', `Request from ${fullName} accepted and added to customer directory.`);
-        }
+    if (openInqBtnTop) openInqBtnTop.addEventListener('click', openInquiryModal);
+    if (closeInqModal) closeInqModal.addEventListener('click', hideInquiryModal);
+    if (inqModal) {
+      inqModal.addEventListener('click', function(e) {
+        if (e.target === inqModal) hideInquiryModal();
       });
     }
 
-    // Reset Demo Customers
-    function resetCustomerCatalog() {
-      showConfirmModal({
-        title: 'Reset Customer Directory',
-        message: 'Restore all default demo customer records back to the directory?',
-        confirmText: 'Reset Customers',
-        isDanger: false,
-        onConfirm: function() {
-          localStorage.removeItem(STORAGE_KEY_DELETED);
-          localStorage.removeItem(STORAGE_KEY_CUSTOM);
-          localStorage.removeItem(STORAGE_KEY_ACCEPTED_REQS);
-          window.location.reload();
-        }
+    // Submit Inquiry form handler
+    if (inqForm) {
+      inqForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const fullName = (document.getElementById('inq-fullname')?.value || '').trim();
+        const phone = (document.getElementById('inq-phone')?.value || '').trim();
+        const email = (document.getElementById('inq-email')?.value || '').trim();
+        const vehicle = (document.getElementById('inq-vehicle')?.value || '').trim() || 'Vehicle Inquiry';
+        const preference = document.getElementById('inq-preference')?.value || 'Direct Purchase (Cash)';
+        const message = (document.getElementById('inq-message')?.value || '').trim();
+
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' +
+                        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+
+        const newInquiry = {
+          id: 'inq_' + Date.now(),
+          vehicle: vehicle,
+          fullName: fullName,
+          phone: phone,
+          email: email,
+          preference: preference,
+          message: message,
+          date: dateStr,
+          status: 'New'
+        };
+
+        addInquiry(newInquiry);
+        renderInquiries();
+        hideInquiryModal();
+        inqForm.reset();
+
+        showFlash('success', `Inquiry from ${fullName} submitted successfully! It is now in the Notifications container.`);
       });
     }
 
-    // Initialize Customers on load: exclude deleted customers and inject custom customers
-    function initCustomers() {
-      const deletedIds = getDeletedCustomerIds().map(String);
-
-      // Remove any hardcoded rows that were deleted
-      document.querySelectorAll('.customer-row').forEach(row => {
-        const rowId = String(row.getAttribute('data-id'));
-        if (deletedIds.includes(rowId)) {
-          row.remove();
-        }
-      });
-
-      // Remove any already-accepted request cards from sidebar
-      const acceptedReqs = getAcceptedRequests();
-      acceptedReqs.forEach(reqId => {
-        const card = document.getElementById(reqId);
-        if (card) card.remove();
-      });
-
-      // Add custom / accepted customers that are not deleted
-      const customCusts = getCustomCustomers();
-      const tbody = document.getElementById('customers-table-body');
-      const emptyRow = document.getElementById('empty-state-row');
-
-      if (tbody) {
-        customCusts.forEach(cust => {
-          if (!deletedIds.includes(String(cust.id))) {
-            const tr = createCustomerRowElement(cust);
-            if (emptyRow) {
-              tbody.insertBefore(tr, emptyRow);
-            } else {
-              tbody.appendChild(tr);
-            }
-            if (typeof cust.id === 'number' && cust.id >= nextId) {
-              nextId = cust.id + 1;
-            }
-          }
-        });
+    // Listen for storage events across tabs (e.g., when submitted from detail.html)
+    window.addEventListener('storage', function(e) {
+      if (e.key === STORAGE_KEY_INQUIRIES) {
+        renderInquiries();
+      } else if (e.key === STORAGE_KEY_CUSTOMERS) {
+        renderCustomers();
       }
+    });
 
-      updateActiveCount();
-    }
-
-    // Initialize customers immediately
-    initCustomers();
+    // Initial page render
+    renderInquiries();
+    renderCustomers();
   </script>
 </body>
 </html>

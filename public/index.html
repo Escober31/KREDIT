@@ -259,6 +259,7 @@
             <input name="make" placeholder="Brand Name" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
             <input name="model" placeholder="Model" required class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
             <input name="year" placeholder="Year Model" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+            <input name="mileage" placeholder="Mileage (e.g. 58,000 mi)" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
 
             <!-- CONDITION -->
             <select name="condition" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
@@ -303,7 +304,29 @@
             <!-- DESCRIPTION -->
             <textarea name="description" rows="4" placeholder="Full vehicle description..." class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg md:col-span-2 text-white focus:outline-none focus:border-amber-500 text-sm"></textarea>
 
-            <input type="file" name="photo" class="md:col-span-2 text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-200 hover:file:bg-slate-700">
+            <!-- Vehicle Photos (up to 8) -->
+            <div class="md:col-span-2 space-y-2">
+              <div class="flex items-center justify-between">
+                <label class="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
+                  <span>Vehicle Photos</span>
+                  <span class="text-amber-500 font-normal">(Max 8 photos)</span>
+                </label>
+                <span id="photo-count-badge" class="text-xs text-slate-400 font-mono">0 / 8 selected</span>
+              </div>
+
+              <div class="relative">
+                <input type="file" id="vehicle-photos-input" name="photos" accept="image/*" multiple
+                       class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-wider file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700 file:cursor-pointer cursor-pointer bg-slate-900 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-amber-500 transition">
+              </div>
+
+              <!-- Photo Previews Grid (Max 8 thumbnails) -->
+              <div id="photos-preview-container" class="hidden grid grid-cols-4 sm:grid-cols-8 gap-2 pt-1"></div>
+
+              <p id="photo-error-msg" class="hidden text-xs text-red-400 font-medium flex items-center gap-1.5 mt-1">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Maximum 8 photos allowed. Only the first 8 photos were kept.</span>
+              </p>
+            </div>
           </div>
 
           <div class="flex items-center gap-3 pt-2">
@@ -428,7 +451,10 @@
       });
     }
     if (cancelBtn && addForm) {
-      cancelBtn.addEventListener('click', () => addForm.classList.add('hidden'));
+      cancelBtn.addEventListener('click', () => {
+        addForm.classList.add('hidden');
+        resetPhotoSelection();
+      });
     }
 
     // Flash message helper
@@ -583,17 +609,32 @@
       const isNew = (car.condition || '').toLowerCase() === 'new';
       const badgeBorder = isNew ? 'border-emerald-500' : 'border-amber-500';
 
-      card.innerHTML = `
-        <div class="relative h-52 bg-slate-900 flex items-center justify-center border-b border-slate-800 overflow-hidden">
-          <div class="absolute inset-0 bg-gradient-to-t from-[#0B1320] to-slate-900/50 flex items-center justify-center">
+      const photoSrc = car.photo || (car.photos && car.photos.length > 0 ? car.photos[0] : null);
+      const photoCount = (car.photos && car.photos.length > 0) ? car.photos.length : (car.photo ? 1 : 0);
+
+      const mediaHtml = photoSrc
+        ? `<img src="${photoSrc}" alt="${car.name}" class="w-full h-full object-cover">`
+        : `<div class="absolute inset-0 bg-gradient-to-t from-[#0B1320] to-slate-900/50 flex items-center justify-center">
             <svg class="w-16 h-16 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
             </svg>
-          </div>
+          </div>`;
+
+      const photosBadgeHtml = photoCount > 1
+        ? `<div class="absolute bottom-2 right-2 bg-black/85 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700 flex items-center gap-1 shadow">
+             <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"/></svg>
+             <span>${photoCount} Photos</span>
+           </div>`
+        : '';
+
+      card.innerHTML = `
+        <div class="relative h-52 bg-slate-900 flex items-center justify-center border-b border-slate-800 overflow-hidden">
+          ${mediaHtml}
           <div class="absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 ${badgeBorder}">
             ${car.condition || 'Second Hand'}
           </div>
+          ${photosBadgeHtml}
         </div>
 
         <div class="p-5 flex-1 flex flex-col">
@@ -728,6 +769,91 @@
       updateVehicleCount();
     }
 
+    // Multi-photo management (up to 8 photos)
+    let selectedVehiclePhotos = [];
+    const photoInput = document.getElementById('vehicle-photos-input');
+    const photoCountBadge = document.getElementById('photo-count-badge');
+    const previewContainer = document.getElementById('photos-preview-container');
+    const photoErrorMsg = document.getElementById('photo-error-msg');
+
+    function resetPhotoSelection() {
+      selectedVehiclePhotos = [];
+      if (photoInput) photoInput.value = '';
+      if (photoCountBadge) photoCountBadge.textContent = '0 / 8 selected';
+      if (photoErrorMsg) photoErrorMsg.classList.add('hidden');
+      if (previewContainer) {
+        previewContainer.innerHTML = '';
+        previewContainer.classList.add('hidden');
+      }
+    }
+
+    function updatePhotoPreviews() {
+      if (!previewContainer) return;
+      previewContainer.innerHTML = '';
+
+      const validPhotos = selectedVehiclePhotos.filter(Boolean);
+      if (photoCountBadge) {
+        photoCountBadge.textContent = `${validPhotos.length} / 8 selected`;
+      }
+
+      if (validPhotos.length === 0) {
+        previewContainer.classList.add('hidden');
+        return;
+      }
+
+      previewContainer.classList.remove('hidden');
+
+      validPhotos.forEach((src, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'relative group aspect-square rounded-lg overflow-hidden border border-slate-700 bg-slate-900 shadow';
+        thumb.innerHTML = `
+          <img src="${src}" class="w-full h-full object-cover" alt="Photo ${idx + 1}">
+          <button type="button" class="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold opacity-0 group-hover:opacity-100 transition shadow" title="Remove photo">
+            &times;
+          </button>
+          <span class="absolute bottom-1 left-1 bg-black/80 text-white text-[9px] font-mono px-1 rounded">#${idx + 1}</span>
+        `;
+
+        thumb.querySelector('button').addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectedVehiclePhotos.splice(idx, 1);
+          updatePhotoPreviews();
+        });
+
+        previewContainer.appendChild(thumb);
+      });
+    }
+
+    if (photoInput) {
+      photoInput.addEventListener('change', function() {
+        const files = Array.from(this.files || []);
+        if (files.length === 0) return;
+
+        if (files.length > 8) {
+          if (photoErrorMsg) photoErrorMsg.classList.remove('hidden');
+          showFlash('danger', 'You can select up to 8 photos. Only the first 8 photos were kept.');
+        } else {
+          if (photoErrorMsg) photoErrorMsg.classList.add('hidden');
+        }
+
+        const allowedFiles = files.slice(0, 8);
+        selectedVehiclePhotos = [];
+        let loaded = 0;
+
+        allowedFiles.forEach((file, index) => {
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            selectedVehiclePhotos[index] = evt.target.result;
+            loaded++;
+            if (loaded === allowedFiles.length) {
+              updatePhotoPreviews();
+            }
+          };
+          reader.readAsDataURL(file);
+        });
+      });
+    }
+
     // Add Vehicle form submission handling
     const addVehicleForm = document.getElementById('add-vehicle-form');
     if (addVehicleForm) {
@@ -737,27 +863,69 @@
         const model = (addVehicleForm.elements['model'] ? addVehicleForm.elements['model'].value : '').trim();
         const year = (addVehicleForm.elements['year'] ? addVehicleForm.elements['year'].value : '').trim() || new Date().getFullYear();
         const condition = (addVehicleForm.elements['condition'] ? addVehicleForm.elements['condition'].value : '') || 'Second Hand';
+        const mileageInput = (addVehicleForm.elements['mileage'] ? addVehicleForm.elements['mileage'].value : '').trim();
         const priceVal = (addVehicleForm.elements['price'] ? addVehicleForm.elements['price'].value : '').trim();
-        const mileageVal = (addVehicleForm.elements['downpayment'] ? addVehicleForm.elements['downpayment'].value : '').trim();
+        const downpaymentVal = (addVehicleForm.elements['downpayment'] ? addVehicleForm.elements['downpayment'].value : '').trim();
+        const stockVal = (addVehicleForm.elements['stock'] ? addVehicleForm.elements['stock'].value : '').trim() || '1';
+        const fuelTypeVal = (addVehicleForm.elements['fuel_type'] ? addVehicleForm.elements['fuel_type'].value : '').trim() || 'Gasoline';
+        const engineVal = (addVehicleForm.elements['engine'] ? addVehicleForm.elements['engine'].value : '').trim() || 'Standard Engine';
+        const transmissionVal = (addVehicleForm.elements['transmission'] ? addVehicleForm.elements['transmission'].value : '').trim() || 'Automatic';
+        const locationVal = (addVehicleForm.elements['location'] ? addVehicleForm.elements['location'].value : '').trim() || 'Olongapo City Showroom';
+        const descriptionVal = (addVehicleForm.elements['description'] ? addVehicleForm.elements['description'].value : '').trim();
 
         const fullName = `${make} ${model}`.trim() || 'New Vehicle';
         const newId = 'car_' + Date.now();
 
         let displayPrice = priceVal;
+        const cleanPriceNum = Number(priceVal.replace(/[^0-9.]/g, '')) || 0;
         if (displayPrice && !displayPrice.startsWith('₱')) {
-          const num = Number(displayPrice.replace(/[^0-9.]/g, ''));
-          displayPrice = (!isNaN(num) && num > 0) ? `₱${num.toLocaleString()}` : `₱${displayPrice}`;
+          displayPrice = (cleanPriceNum > 0) ? `₱${cleanPriceNum.toLocaleString()}` : `₱${displayPrice}`;
         } else if (!displayPrice) {
           displayPrice = '₱0';
         }
 
+        const cleanDownpaymentNum = Number(downpaymentVal.replace(/[^0-9.]/g, '')) || Math.round(cleanPriceNum * 0.1);
+        const loanAmount = Math.max(0, cleanPriceNum - cleanDownpaymentNum);
+        const fin36 = loanAmount > 0 ? `₱${Math.round((loanAmount * 1.18) / 36).toLocaleString()} / mo` : '₱21,450 / mo';
+        const fin48 = loanAmount > 0 ? `₱${Math.round((loanAmount * 1.25) / 48).toLocaleString()} / mo` : '₱17,200 / mo';
+        const fin60 = loanAmount > 0 ? `₱${Math.round((loanAmount * 1.32) / 60).toLocaleString()} / mo` : '₱14,800 / mo';
+
+        let mileageFormatted = mileageInput;
+        if (mileageFormatted) {
+          if (!mileageFormatted.toLowerCase().includes('mi')) {
+            const num = Number(mileageFormatted.replace(/[^0-9.]/g, ''));
+            mileageFormatted = !isNaN(num) && num > 0 ? `${num.toLocaleString()} mi` : `${mileageFormatted} mi`;
+          }
+        } else {
+          mileageFormatted = '0 mi';
+        }
+
+        const validPhotos = selectedVehiclePhotos.filter(Boolean);
+
+        const defaultDesc = `Pristine condition ${fullName}. Well-maintained, verified documents, complete service records from authorized dealership, cold air-conditioning, and 160-point mechanical inspection passed. Available for viewing and test drive at our ${locationVal}.`;
+
         const newCar = {
           id: newId,
           name: fullName,
-          year: year,
+          make: make || fullName,
+          model: model || fullName,
+          year: String(year),
           condition: condition,
-          mileage: mileageVal ? `${mileageVal} mi` : '0 mi',
-          price: displayPrice
+          mileage: mileageFormatted,
+          price: displayPrice,
+          rawPrice: cleanPriceNum,
+          downpayment: cleanDownpaymentNum,
+          stock: Number(stockVal) || 1,
+          fuel_type: fuelTypeVal,
+          engine: engineVal,
+          transmission: transmissionVal,
+          location: locationVal,
+          description: descriptionVal || defaultDesc,
+          finance_36: fin36,
+          finance_48: fin48,
+          finance_60: fin60,
+          photo: validPhotos.length > 0 ? validPhotos[0] : '',
+          photos: validPhotos
         };
 
         saveCustomCar(newCar);
@@ -773,8 +941,9 @@
 
         updateVehicleCount();
         addVehicleForm.reset();
+        resetPhotoSelection();
         document.getElementById('add-form').classList.add('hidden');
-        showFlash('success', `Vehicle "${fullName}" was added to inventory.`);
+        showFlash('success', `Vehicle "${fullName}" with ${validPhotos.length} photo(s) was added to inventory.`);
       });
     }
 
