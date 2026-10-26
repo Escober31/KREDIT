@@ -83,66 +83,200 @@
         <h2 class="text-2xl font-bold text-white mb-2">Admin Login</h2>
         <p class="text-slate-400 mb-6">Sign in with your credentials to access the dashboard.</p>
 
-        <form method="post" action="dashboard.html" class="space-y-4" autocomplete="off">
+        <!-- ERROR BANNER -->
+        <div id="login-error" class="hidden mb-5 p-3.5 rounded-lg bg-red-950/80 border border-red-600/70 text-red-300 text-sm flex items-start gap-3 shadow-lg">
+          <svg class="w-5 h-5 flex-shrink-0 text-red-400 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <div id="login-error-text" class="flex-1 font-medium leading-relaxed"></div>
+        </div>
+
+        <form id="login-form" class="space-y-4" autocomplete="off">
           <label class="block">
-            <span class="text-slate-300 text-sm">Email</span>
-            <input type="email" name="email" required class="mt-1 block w-full bg-[#0E1621] border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-cyan-400"/>
+            <span class="text-slate-300 text-sm font-semibold">Email Address</span>
+            <input id="login-email" type="email" name="email" required placeholder="e.g. jorge.admin@kreditcars.com" class="mt-1 block w-full bg-[#0E1621] border border-slate-700 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition text-sm"/>
           </label>
 
           <label class="block">
-            <span class="text-slate-300 text-sm">Password</span>
-            <input type="password" name="password" required class="mt-1 block w-full bg-[#0E1621] border border-slate-700 rounded p-3 text-white focus:outline-none focus:border-cyan-400"/>
+            <span class="text-slate-300 text-sm font-semibold">Password</span>
+            <input id="login-password" type="password" name="password" required placeholder="••••••••••••" class="mt-1 block w-full bg-[#0E1621] border border-slate-700 rounded-lg p-3 text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 transition text-sm"/>
           </label>
 
           <div class="flex items-center justify-between">
-            <label class="flex items-center gap-2 text-slate-400 text-sm">
-              <input type="checkbox" name="remember" class="accent-cyan-400"/>
+            <label class="flex items-center gap-2 text-slate-400 text-sm cursor-pointer select-none">
+              <input type="checkbox" id="login-remember" name="remember" class="accent-amber-500 rounded"/>
               Remember me
             </label>
           </div>
 
-          <button type="submit" class="w-full mt-2 bg-amber-500 hover:bg-amber-400 text-black font-bold py-3 uppercase">Login</button>
+          <button id="login-submit-btn" type="submit" class="w-full mt-2 bg-amber-500 hover:bg-amber-400 active:scale-[0.98] text-black font-bold py-3 uppercase tracking-wider text-sm rounded-lg transition shadow-md">
+            Login
+          </button>
         </form>
 
-        <p class="text-slate-500 text-sm mt-4">Don't have an account try <a href="signin.html" class="text-cyan-400">Sign In</a>.</p>
+        <p class="text-slate-500 text-sm mt-5 text-center">Don't have an account? <a href="register.html" class="text-amber-500 hover:text-amber-400 font-semibold underline underline-offset-2">Register User</a>.</p>
       </div>
     </div>
   </main>
 
 <script>
-// Mobile menu toggle
-const mobileBtn = document.getElementById('mobile-btn');
-const mobileMenu = document.getElementById('mobile-menu');
-if (mobileBtn && mobileMenu) {
-  mobileBtn.addEventListener('click', function(){
-    mobileMenu.classList.toggle('show');
-    mobileBtn.setAttribute('aria-expanded', mobileMenu.classList.contains('show'));
-  });
+// Storage keys for persistent users & staff
+const STORAGE_KEY_USERS = 'kreditcars_users_list';
+const STORAGE_KEY_DELETED = 'kreditcars_deleted_users';
+const STORAGE_KEY_DELETED_STAFF = 'kreditcars_deleted_staff';
+const STORAGE_KEY_SESSION = 'kreditcars_logged_in_user';
+
+// Default users
+const DEFAULT_USERS = [
+  {
+    id: '1',
+    fullname: 'Jorge Admin',
+    username: 'admin_jorge',
+    email: 'jorge.admin@kreditcars.com',
+    role: 'admin',
+    password: 'admin123',
+    canDelete: false
+  },
+  {
+    id: '2',
+    fullname: 'Maria Santos',
+    username: 'maria.santos',
+    email: 'maria.santos@kreditcars.com',
+    role: 'staff',
+    password: 'password123',
+    canDelete: true
+  },
+  {
+    id: '3',
+    fullname: 'Robert Diaz',
+    username: 'robert.diaz',
+    email: 'robert.diaz@kreditcars.com',
+    role: 'staff',
+    password: 'password123',
+    canDelete: true
+  },
+  {
+    id: '4',
+    fullname: 'Angela Reyes',
+    username: 'angela.reyes',
+    email: 'angela.reyes@kreditcars.com',
+    role: 'staff',
+    password: 'password123',
+    canDelete: true
+  }
+];
+
+// Get deleted user IDs
+function getDeletedUserIds() {
+  try {
+    const d1 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+    const d2 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_STAFF) || '[]');
+    return Array.from(new Set(d1.concat(d2).map(String)));
+  } catch (err) {
+    return [];
+  }
 }
 
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-  anchor.addEventListener('click', function(e) {
+// Retrieve active registered users
+function getUsers() {
+  const deletedIds = getDeletedUserIds();
+  try {
+    const data = localStorage.getItem(STORAGE_KEY_USERS);
+    if (data) {
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed)) {
+        return parsed
+          .filter(u => !deletedIds.includes(String(u.id)))
+          .map(u => ({
+            ...u,
+            password: u.password || (u.role === 'admin' ? 'admin123' : 'password123')
+          }));
+      }
+    }
+  } catch (err) {
+    console.error('Error loading users:', err);
+  }
+
+  const initial = DEFAULT_USERS.filter(u => !deletedIds.includes(String(u.id)));
+  try {
+    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(initial));
+  } catch (err) {}
+  return initial;
+}
+
+// UI elements
+const loginForm = document.getElementById('login-form');
+const emailInput = document.getElementById('login-email');
+const passwordInput = document.getElementById('login-password');
+const errorBox = document.getElementById('login-error');
+const errorText = document.getElementById('login-error-text');
+
+function showError(msg) {
+  if (errorText) errorText.textContent = msg;
+  if (errorBox) {
+    errorBox.classList.remove('hidden');
+    errorBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function hideError() {
+  if (errorBox) errorBox.classList.add('hidden');
+}
+
+if (emailInput) emailInput.addEventListener('input', hideError);
+if (passwordInput) passwordInput.addEventListener('input', hideError);
+
+if (loginForm) {
+  loginForm.addEventListener('submit', function (e) {
     e.preventDefault();
-    const target = document.querySelector(this.getAttribute('href'));
-    if(target) target.scrollIntoView({ behavior: 'smooth' });
-    if(mobileMenu && mobileMenu.classList.contains('show')) mobileMenu.classList.remove('show');
-  });
-});
+    hideError();
 
-// Toggle Add Form
-const addForm = document.getElementById('add-form');
-const toggleBtn = document.getElementById('toggle-add-form');
-const cancelBtn = document.getElementById('cancel-add');
+    const email = (emailInput.value || '').trim();
+    const password = (passwordInput.value || '');
 
-if (toggleBtn && addForm) {
-  toggleBtn.addEventListener('click', () => {
-    addForm.classList.toggle('hidden');
-    if(!addForm.classList.contains('hidden')) addForm.scrollIntoView({behavior:'smooth'});
+    if (!email || !password) {
+      showError('Please enter both your email address and password.');
+      return;
+    }
+
+    const users = getUsers();
+    // Search for user by email address (case-insensitive)
+    const matchedUser = users.find(u => (u.email || '').trim().toLowerCase() === email.toLowerCase());
+
+    // 1. Check if email is registered
+    if (!matchedUser) {
+      showError('This email is not registered in our system.');
+      emailInput.focus();
+      return;
+    }
+
+    // 2. Check password
+    const expectedPassword = matchedUser.password || (matchedUser.role === 'admin' ? 'admin123' : 'password123');
+    const isPasswordValid = (password === expectedPassword) ||
+                            (matchedUser.role === 'admin' && (password === 'admin123' || password === 'password123'));
+
+    if (!isPasswordValid) {
+      showError('Incorrect password. Please try again.');
+      passwordInput.focus();
+      return;
+    }
+
+    // 3. User authenticated successfully — set session
+    const sessionData = {
+      id: matchedUser.id,
+      fullname: matchedUser.fullname,
+      username: matchedUser.username,
+      email: matchedUser.email,
+      role: matchedUser.role || 'staff',
+      loggedInAt: new Date().toISOString()
+    };
+
+    localStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(sessionData));
+    sessionStorage.setItem(STORAGE_KEY_SESSION, JSON.stringify(sessionData));
+
+    // 4. Redirect to dashboard
+    window.location.href = 'dashboard.html';
   });
-}
-if (cancelBtn && addForm) {
-  cancelBtn.addEventListener('click', () => addForm.classList.add('hidden'));
 }
 </script>
 

@@ -17,8 +17,10 @@
     // Immediate anti-flash check for deleted staff before rendering
     (function() {
       try {
-        var deleted = JSON.parse(localStorage.getItem('kreditcars_deleted_staff') || '[]');
-        if (Array.isArray(deleted) && deleted.length > 0) {
+        var d1 = JSON.parse(localStorage.getItem('kreditcars_deleted_staff') || '[]');
+        var d2 = JSON.parse(localStorage.getItem('kreditcars_deleted_users') || '[]');
+        var deleted = Array.from(new Set(d1.concat(d2).map(String)));
+        if (deleted.length > 0) {
           var style = document.createElement('style');
           style.id = 'anti-flash-deleted-staff';
           style.textContent = deleted.map(function(id) {
@@ -55,7 +57,7 @@
         <a href="staff.html" class="uppercase text-sm text-amber-500 font-bold hover:text-white transition">Staff</a>
         <a href="customer.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Customers</a>
         <a href="notify.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Notify</a>
-        <a href="admin_create_user.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Register</a>
+        <a href="register.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Register</a>
         <a href="activity.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Activity</a>
         <a href="dashboard.html" class="bg-amber-500 px-5 py-2 text-black font-bold uppercase transform -skew-x-6 hover:-translate-y-0.5 transition">
           <span class="inline-block skew-x-6">DashBoard</span>
@@ -73,7 +75,7 @@
         <a href="staff.html" class="text-amber-500 font-bold py-1">Staff</a>
         <a href="customer.html" class="text-slate-200 hover:text-amber-500 py-1">Customers</a>
         <a href="notify.html" class="text-slate-200 hover:text-amber-500 py-1">Notify</a>
-        <a href="admin_create_user.html" class="text-slate-200 hover:text-amber-500 py-1">Register</a>
+        <a href="register.html" class="text-slate-200 hover:text-amber-500 py-1">Register</a>
         <a href="activity.html" class="text-slate-200 hover:text-amber-500 py-1">Activity</a>
         <a href="dashboard.html" class="mt-2 inline-block bg-amber-500 text-black text-center px-4 py-2 uppercase font-bold">DashBoard</a>
       </div>
@@ -96,7 +98,7 @@
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span id="staff-count-text">3 Active Staff</span>
           </span>
-          <a href="admin_create_user.html" class="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-sm shadow">
+          <a href="register.html" class="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-sm shadow">
             <span class="inline-block skew-x-6">+ Add Staff</span>
           </a>
         </div>
@@ -121,68 +123,68 @@
               </tr>
             </thead>
             <tbody id="staff-table-body" class="divide-y divide-slate-800/80">
-              <!-- Staff Row 1 -->
-              <tr class="staff-row hover:bg-slate-900/50 transition" data-id="1" data-name="Maria Santos">
+              <!-- Staff Row 2: Maria Santos -->
+              <tr class="staff-row hover:bg-slate-900/50 transition" data-id="2" data-name="Maria Santos">
                 <td class="px-4 py-3 align-middle">
                   <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
                     <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
                   </div>
                 </td>
-                <td class="px-4 py-3 align-middle font-medium text-white">Santos, Maria</td>
+                <td class="px-4 py-3 align-middle font-medium text-white">Maria Santos</td>
                 <td class="px-4 py-3 align-middle text-slate-300">maria.santos@kreditcars.com</td>
                 <td class="px-4 py-3 align-middle text-slate-400">+63 917 123 4567</td>
                 <td class="px-4 py-3 align-middle">
-                  <span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Admin</span>
+                  <span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Staff</span>
                 </td>
-                <td class="px-4 py-3 align-middle text-xs text-slate-400">2026-01-15</td>
+                <td class="px-4 py-3 align-middle text-xs text-slate-400">Oct 18, 2026</td>
                 <td class="px-4 py-3 align-middle text-center">
                   <div class="flex items-center justify-center gap-2">
-                    <a href="admin_create_user.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
-                    <button type="button" onclick="confirmDeleteStaff(1, 'Maria Santos')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
+                    <a href="register.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
+                    <button type="button" onclick="confirmDeleteStaff(2, 'Maria Santos')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
                   </div>
                 </td>
               </tr>
 
-              <!-- Staff Row 2 -->
-              <tr class="staff-row hover:bg-slate-900/50 transition" data-id="2" data-name="Juan Dela Cruz">
+              <!-- Staff Row 3: Robert Diaz -->
+              <tr class="staff-row hover:bg-slate-900/50 transition" data-id="3" data-name="Robert Diaz">
                 <td class="px-4 py-3 align-middle">
                   <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
                     <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
                   </div>
                 </td>
-                <td class="px-4 py-3 align-middle font-medium text-white">Dela Cruz, Juan</td>
-                <td class="px-4 py-3 align-middle text-slate-300">juan.delacruz@kreditcars.com</td>
+                <td class="px-4 py-3 align-middle font-medium text-white">Robert Diaz</td>
+                <td class="px-4 py-3 align-middle text-slate-300">robert.diaz@kreditcars.com</td>
                 <td class="px-4 py-3 align-middle text-slate-400">+63 918 234 5678</td>
                 <td class="px-4 py-3 align-middle">
                   <span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Staff</span>
                 </td>
-                <td class="px-4 py-3 align-middle text-xs text-slate-400">2026-02-10</td>
+                <td class="px-4 py-3 align-middle text-xs text-slate-400">Oct 19, 2026</td>
                 <td class="px-4 py-3 align-middle text-center">
                   <div class="flex items-center justify-center gap-2">
-                    <a href="admin_create_user.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
-                    <button type="button" onclick="confirmDeleteStaff(2, 'Juan Dela Cruz')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
+                    <a href="register.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
+                    <button type="button" onclick="confirmDeleteStaff(3, 'Robert Diaz')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
                   </div>
                 </td>
               </tr>
 
-              <!-- Staff Row 3 -->
-              <tr class="staff-row hover:bg-slate-900/50 transition" data-id="3" data-name="Roberto Reyes">
+              <!-- Staff Row 4: Angela Reyes -->
+              <tr class="staff-row hover:bg-slate-900/50 transition" data-id="4" data-name="Angela Reyes">
                 <td class="px-4 py-3 align-middle">
                   <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
                     <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
                   </div>
                 </td>
-                <td class="px-4 py-3 align-middle font-medium text-white">Reyes, Roberto</td>
-                <td class="px-4 py-3 align-middle text-slate-300">roberto.reyes@kreditcars.com</td>
+                <td class="px-4 py-3 align-middle font-medium text-white">Angela Reyes</td>
+                <td class="px-4 py-3 align-middle text-slate-300">angela.reyes@kreditcars.com</td>
                 <td class="px-4 py-3 align-middle text-slate-400">+63 920 345 6789</td>
                 <td class="px-4 py-3 align-middle">
                   <span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Staff</span>
                 </td>
-                <td class="px-4 py-3 align-middle text-xs text-slate-400">2026-03-01</td>
+                <td class="px-4 py-3 align-middle text-xs text-slate-400">Oct 20, 2026</td>
                 <td class="px-4 py-3 align-middle text-center">
                   <div class="flex items-center justify-center gap-2">
-                    <a href="admin_create_user.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
-                    <button type="button" onclick="confirmDeleteStaff(3, 'Roberto Reyes')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
+                    <a href="register.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
+                    <button type="button" onclick="confirmDeleteStaff(4, 'Angela Reyes')" class="px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
                   </div>
                 </td>
               </tr>
@@ -201,7 +203,7 @@
         <h3 class="text-base font-bold text-slate-200 mb-1">No Active Staff Members</h3>
         <p class="text-xs text-slate-500 max-w-sm mx-auto mb-4">All staff accounts have been removed. Click "+ Add Staff" to register a new user.</p>
         <div class="flex items-center justify-center gap-3">
-          <a href="admin_create_user.html" class="inline-flex items-center gap-2 bg-amber-500 text-black px-4 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-xs shadow">
+          <a href="register.html" class="inline-flex items-center gap-2 bg-amber-500 text-black px-4 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-xs shadow">
             <span class="inline-block skew-x-6">+ Add Staff</span>
           </a>
           <button id="reset-staff-btn" type="button" onclick="resetStaffCatalog()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 uppercase font-semibold text-xs rounded transition border border-slate-700">
@@ -403,135 +405,224 @@
       });
     }
 
-    // Storage keys for persistent staff
-    const STORAGE_KEY_DELETED = 'kreditcars_deleted_staff';
-    const STORAGE_KEY_CUSTOM = 'kreditcars_custom_staff';
+    // Storage keys for persistent users & staff
+    const STORAGE_KEY_USERS = 'kreditcars_users_list';
+    const STORAGE_KEY_DELETED = 'kreditcars_deleted_users';
+    const STORAGE_KEY_DELETED_STAFF = 'kreditcars_deleted_staff';
 
+    // Default users catalog (Jorge Admin is admin, others are staff)
+    const DEFAULT_USERS = [
+      {
+        id: '1',
+        fullname: 'Jorge Admin',
+        username: 'admin_jorge',
+        email: 'jorge.admin@kreditcars.com',
+        role: 'admin',
+        password: 'admin123',
+        created: 'Oct 15, 2026',
+        contact: '+63 912 345 6789',
+        canDelete: false
+      },
+      {
+        id: '2',
+        fullname: 'Maria Santos',
+        username: 'maria.santos',
+        email: 'maria.santos@kreditcars.com',
+        role: 'staff',
+        password: 'password123',
+        created: 'Oct 18, 2026',
+        contact: '+63 917 123 4567',
+        canDelete: true
+      },
+      {
+        id: '3',
+        fullname: 'Robert Diaz',
+        username: 'robert.diaz',
+        email: 'robert.diaz@kreditcars.com',
+        role: 'staff',
+        password: 'password123',
+        created: 'Oct 19, 2026',
+        contact: '+63 918 234 5678',
+        canDelete: true
+      },
+      {
+        id: '4',
+        fullname: 'Angela Reyes',
+        username: 'angela.reyes',
+        email: 'angela.reyes@kreditcars.com',
+        role: 'staff',
+        password: 'password123',
+        created: 'Oct 20, 2026',
+        contact: '+63 920 345 6789',
+        canDelete: true
+      }
+    ];
+
+    // Helper: Escape HTML
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Get all permanently deleted user/staff IDs
     function getDeletedStaffIds() {
       try {
-        const data = localStorage.getItem(STORAGE_KEY_DELETED);
-        return data ? JSON.parse(data) : [];
+        const d1 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+        const d2 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_STAFF) || '[]');
+        return Array.from(new Set(d1.concat(d2).map(String)));
       } catch (err) {
         return [];
       }
     }
 
+    // Permanently record deleted user ID across all user/staff storage keys
     function saveDeletedStaffId(id) {
       try {
-        const deleted = getDeletedStaffIds();
         const strId = String(id);
-        if (!deleted.includes(strId)) {
-          deleted.push(strId);
-          localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
+        const d1 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+        if (!d1.map(String).includes(strId)) {
+          d1.push(strId);
+          localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(d1));
+        }
+        const d2 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_STAFF) || '[]');
+        if (!d2.map(String).includes(strId)) {
+          d2.push(strId);
+          localStorage.setItem(STORAGE_KEY_DELETED_STAFF, JSON.stringify(d2));
         }
       } catch (err) {
         console.error('Error saving deleted staff to localStorage:', err);
       }
     }
 
-    function getCustomStaff() {
+    // Retrieve active users from localStorage (or initialize with defaults)
+    function getUsers() {
+      const deletedIds = getDeletedStaffIds();
       try {
-        const data = localStorage.getItem(STORAGE_KEY_CUSTOM);
-        return data ? JSON.parse(data) : [];
+        const data = localStorage.getItem(STORAGE_KEY_USERS);
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed)) {
+            return parsed.filter(u => !deletedIds.includes(String(u.id)));
+          }
+        }
       } catch (err) {
-        return [];
+        console.error('Error loading users from localStorage:', err);
       }
-    }
 
-    function removeCustomStaff(id) {
+      // Initialize defaults excluding any deleted accounts
+      const initial = DEFAULT_USERS.filter(u => !deletedIds.includes(String(u.id)));
       try {
-        const custom = getCustomStaff().filter(s => String(s.id) !== String(id));
-        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(initial));
+      } catch (err) {}
+      return initial;
+    }
+
+    // Save users list to localStorage
+    function saveUsers(users) {
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
       } catch (err) {
-        console.error('Error removing custom staff:', err);
+        console.error('Error saving users to localStorage:', err);
       }
     }
 
-    function createStaffRowElement(staff) {
-      const tr = document.createElement('tr');
-      tr.className = 'staff-row hover:bg-slate-900/50 transition';
-      tr.setAttribute('data-id', staff.id);
-      tr.setAttribute('data-name', staff.name);
-
-      const isAdmin = (staff.role || '').toLowerCase() === 'admin';
-      const roleBadge = isAdmin
-        ? '<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Admin</span>'
-        : '<span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Staff</span>';
-
-      tr.innerHTML = `
-        <td class="px-4 py-3 align-middle">
-          <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
-            <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
-          </div>
-        </td>
-        <td class="px-4 py-3 align-middle font-medium text-white">${staff.name}</td>
-        <td class="px-4 py-3 align-middle text-slate-300">${staff.email || '—'}</td>
-        <td class="px-4 py-3 align-middle text-slate-400">${staff.contact || '—'}</td>
-        <td class="px-4 py-3 align-middle">
-          ${roleBadge}
-        </td>
-        <td class="px-4 py-3 align-middle text-xs text-slate-400">${staff.created || new Date().toISOString().slice(0, 10)}</td>
-        <td class="px-4 py-3 align-middle text-center">
-          <div class="flex items-center justify-center gap-2">
-            <a href="admin_create_user.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
-            <button type="button" class="btn-delete-staff px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
-          </div>
-        </td>
-      `;
-
-      const deleteBtn = tr.querySelector('.btn-delete-staff');
-      if (deleteBtn) {
-        deleteBtn.addEventListener('click', function() {
-          confirmDeleteStaff(staff.id, staff.name);
-        });
-      }
-
-      return tr;
+    // Permanently delete user account
+    function deleteUserAccount(id) {
+      const strId = String(id);
+      saveDeletedStaffId(strId);
+      const current = getUsers().filter(u => String(u.id) !== strId);
+      saveUsers(current);
+      return current;
     }
 
-    // Update active count
-    function updateStaffCount() {
-      const rows = document.querySelectorAll('.staff-row');
-      const count = rows.length;
+    // Render only staff accounts
+    function renderStaff() {
+      const users = getUsers();
+      // Filter ONLY staff that are created in register.html (role: 'staff')
+      const staffMembers = users.filter(u => (u.role || '').toLowerCase() === 'staff');
+      const tbody = document.getElementById('staff-table-body');
       const countText = document.getElementById('staff-count-text');
       const emptyState = document.getElementById('empty-state');
 
       if (countText) {
-        countText.textContent = `${count} Active Staff`;
+        countText.textContent = `${staffMembers.length} Active Staff`;
       }
 
-      if (emptyState) {
-        if (count === 0) {
-          emptyState.classList.remove('hidden');
-        } else {
-          emptyState.classList.add('hidden');
-        }
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (staffMembers.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
       }
+
+      if (emptyState) emptyState.classList.add('hidden');
+
+      staffMembers.forEach(staff => {
+        const tr = document.createElement('tr');
+        tr.className = 'staff-row hover:bg-slate-900/50 transition';
+        tr.setAttribute('data-id', staff.id);
+        tr.setAttribute('data-name', staff.fullname);
+
+        tr.innerHTML = `
+          <td class="px-4 py-3 align-middle">
+            <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-800 flex items-center justify-center text-slate-500 border border-slate-700/80">
+              <svg class="w-6 h-6 text-slate-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/></svg>
+            </div>
+          </td>
+          <td class="px-4 py-3 align-middle font-medium text-white">${escapeHtml(staff.fullname)}</td>
+          <td class="px-4 py-3 align-middle text-slate-300">${escapeHtml(staff.email || '—')}</td>
+          <td class="px-4 py-3 align-middle text-slate-400">${escapeHtml(staff.contact || '—')}</td>
+          <td class="px-4 py-3 align-middle">
+            <span class="bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 px-2.5 py-0.5 rounded text-xs uppercase font-bold">Staff</span>
+          </td>
+          <td class="px-4 py-3 align-middle text-xs text-slate-400">${escapeHtml(staff.created || '—')}</td>
+          <td class="px-4 py-3 align-middle text-center">
+            <div class="flex items-center justify-center gap-2">
+              <a href="register.html" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 rounded text-xs font-semibold text-white transition">Edit</a>
+              <button type="button" class="btn-delete-staff px-3 py-1 bg-red-600/80 hover:bg-red-600 rounded text-xs font-semibold text-white transition">Delete</button>
+            </div>
+          </td>
+        `;
+
+        const btn = tr.querySelector('.btn-delete-staff');
+        if (btn) {
+          btn.addEventListener('click', function() {
+            confirmDeleteStaff(staff.id, staff.fullname);
+          });
+        }
+
+        tbody.appendChild(tr);
+      });
     }
 
     // Confirm Delete Staff Member
     function confirmDeleteStaff(id, name) {
-      const row = document.querySelector(`.staff-row[data-id="${id}"]`);
       showConfirmModal({
         title: 'Delete Staff Member',
-        message: `Delete staff account for <span class="font-bold text-white">${name}</span>? This user will lose system access immediately.`,
+        message: `Delete staff account for <span class="font-bold text-white">${escapeHtml(name)}</span>? This user will lose system access permanently.`,
         confirmText: 'Yes, Delete',
         isDanger: true,
         onConfirm: function() {
           // 1. Permanently record deletion in localStorage so it stays deleted across refreshes/page visits
-          saveDeletedStaffId(id);
-          removeCustomStaff(id);
+          deleteUserAccount(id);
 
           // 2. Animate and remove from DOM
+          const row = document.querySelector(`.staff-row[data-id="${id}"]`);
           if (row) {
             row.style.transition = 'all 0.3s ease';
             row.style.opacity = '0';
             setTimeout(() => {
               row.remove();
-              updateStaffCount();
+              renderStaff();
             }, 300);
           } else {
-            updateStaffCount();
+            renderStaff();
           }
 
           showFlash('success', `Staff account for ${name} was permanently removed.`);
@@ -548,41 +639,16 @@
         isDanger: false,
         onConfirm: function() {
           localStorage.removeItem(STORAGE_KEY_DELETED);
-          localStorage.removeItem(STORAGE_KEY_CUSTOM);
+          localStorage.removeItem(STORAGE_KEY_DELETED_STAFF);
+          localStorage.removeItem(STORAGE_KEY_USERS);
+          localStorage.removeItem('kreditcars_custom_staff');
           window.location.reload();
         }
       });
     }
 
-    // Initialize Staff on load: exclude deleted accounts and inject custom accounts
-    function initStaff() {
-      const deletedIds = getDeletedStaffIds().map(String);
-
-      // Remove any hardcoded rows that were marked as deleted
-      document.querySelectorAll('.staff-row').forEach(row => {
-        const rowId = String(row.getAttribute('data-id'));
-        if (deletedIds.includes(rowId)) {
-          row.remove();
-        }
-      });
-
-      // Add custom staff that are not deleted
-      const customStaff = getCustomStaff();
-      const tbody = document.getElementById('staff-table-body');
-
-      if (tbody) {
-        customStaff.forEach(staff => {
-          if (!deletedIds.includes(String(staff.id))) {
-            tbody.appendChild(createStaffRowElement(staff));
-          }
-        });
-      }
-
-      updateStaffCount();
-    }
-
     // Initialize staff roster immediately
-    initStaff();
+    renderStaff();
   </script>
 </body>
 </html>

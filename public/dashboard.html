@@ -7,13 +7,27 @@
   <meta name="description" content="KreditCars dashboard" />
   <link rel="icon" href="images/KREDITCARS.png" />
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- AUTHENTICATION ACCESS GUARD -->
+  <script>
+    (function() {
+      try {
+        var session = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
+        if (!session) {
+          window.location.replace('login.html');
+        }
+      } catch (e) {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+
   <style>
     .glass { background: rgba(14,22,33,0.65); backdrop-filter: blur(6px); }
 
-    /* small helper so the nav height is consistent if you adjust Tailwind classes */
     :root {
-      --nav-h-mobile: 4rem;  /* 64px (h-16) */
-      --nav-h-md: 5rem;      /* 80px (h-20) */
+      --nav-h-mobile: 4rem;  /* 64px */
+      --nav-h-md: 5rem;      /* 80px */
     }
     @media (min-width: 768px) {
       :root { --nav-h: var(--nav-h-md); }
@@ -22,31 +36,23 @@
       :root { --nav-h: var(--nav-h-mobile); }
     }
 
-    /* ensure main always starts below the fixed nav */
-    main { padding-top: calc(var(--nav-h) + 1rem); } /* extra 1rem gap for breathing room */
+    main { padding-top: calc(var(--nav-h) + 1.5rem); }
   </style>
 </head>
-<body class="bg-[#0E1621] text-slate-200 antialiased font-sans">
+<body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
 
   <!-- NAV (fixed) -->
-  <nav class="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 bg-[#07101a]/80 backdrop-blur-sm border-b border-slate-900">
+  <nav class="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 bg-[#07101a]/80 backdrop-blur-lg border-b border-slate-800 shadow-sm">
     <div class="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3">
-        <!-- SVG hexagon that clips the image inside and draws the orange border -->
         <svg viewBox="0 0 100 100" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KreditCars logo">
           <defs>
             <clipPath id="hexClipLogo">
               <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" />
             </clipPath>
           </defs>
-
-          <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50"
-                   fill="none" stroke="#f59e0b" stroke-width="6" stroke-linejoin="round" />
-
-          <image href="images/KREDITCARS.png"
-                 x="0" y="0" width="100" height="100"
-                 preserveAspectRatio="xMidYMid slice"
-                 clip-path="url(#hexClipLogo)" />
+          <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" fill="none" stroke="#f59e0b" stroke-width="6" stroke-linejoin="round" />
+          <image href="images/KREDITCARS.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" clip-path="url(#hexClipLogo)" />
         </svg>
 
         <div class="leading-tight">
@@ -55,89 +61,121 @@
         </div>
       </a>
 
-      <div class="hidden md:flex items-center gap-4">
-        <span class="text-slate-300">Welcome, <strong class="text-white">Admin</strong></span>
+      <!-- Desktop Nav links -->
+      <div class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Inventory</a>
+        <a href="staff.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Staff</a>
+        <a href="customer.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Customers</a>
+        <a href="notify.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Notify</a>
+        <a href="register.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Register</a>
+        <a href="activity.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Activity</a>
+        <button type="button" onclick="logout()" class="bg-red-600/80 hover:bg-red-600 text-white px-4 py-2 text-xs uppercase font-bold rounded transition shadow">
+          Logout
+        </button>
       </div>
 
       <!-- mobile menu button -->
-      <button id="mobile-btn" class="md:hidden text-white" aria-label="Toggle navigation">
+      <button id="mobile-btn" class="md:hidden text-white p-2 rounded-lg hover:bg-slate-800" aria-label="Toggle navigation">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" stroke="currentColor"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
       </button>
     </div>
 
-    <!-- mobile menu (slides below the nav) -->
-    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-800 bg-[#07101a]/95">
+    <!-- mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden border-t border-slate-800 bg-[#07101a]/95 backdrop-blur-md">
       <div class="px-6 py-4 flex flex-col gap-3">
-        <a href="index.html" class="text-slate-200">Home</a>
-        <a href="index.html#inventory" class="text-slate-200">Inventory</a>
-        <a href="#services" class="text-slate-200">Services</a>
-        <a href="#process" class="text-slate-200">Process</a>
-        <a href="#contact" class="text-slate-200">Contact</a>
-        <a href="login.html" class="mt-2 inline-block bg-amber-500 text-black px-4 py-2 uppercase font-bold">Logout</a>
+        <a href="index.html" class="text-slate-200 hover:text-amber-500 py-1">Inventory</a>
+        <a href="staff.html" class="text-slate-200 hover:text-amber-500 py-1">Staff</a>
+        <a href="customer.html" class="text-slate-200 hover:text-amber-500 py-1">Customers</a>
+        <a href="notify.html" class="text-slate-200 hover:text-amber-500 py-1">Notify</a>
+        <a href="register.html" class="text-slate-200 hover:text-amber-500 py-1">Register</a>
+        <a href="activity.html" class="text-slate-200 hover:text-amber-500 py-1">Activity</a>
+        <button type="button" onclick="logout()" class="mt-2 w-full bg-red-600 text-white text-center px-4 py-2 uppercase font-bold text-xs rounded shadow">
+          Logout
+        </button>
       </div>
     </div>
   </nav>
 
   <!-- MAIN -->
-  <main class="pb-16 min-h-screen">
-    <div class="max-w-6xl mx-auto px-6">
-      <div class="flex items-center justify-between mb-8">
+  <main class="pb-16 flex-1 max-w-6xl mx-auto px-6 w-full">
+    <div>
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 pb-6 border-b border-slate-800">
         <div>
           <h1 class="text-3xl md:text-4xl font-black text-white italic">Dashboard</h1>
-          <p class="text-slate-400 mt-1">Welcome back, <strong class="text-white">Admin</strong> — Role: <span class="text-cyan-400">Administrator</span></p>
+          <p class="text-slate-400 mt-1">
+            Welcome back, <strong id="user-display-name" class="text-white">Admin</strong> — 
+            Role: <span id="user-display-role" class="text-cyan-400 font-semibold uppercase text-xs px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/30">Administrator</span>
+          </p>
         </div>
 
         <div class="flex items-center gap-3">
-          <a href="index.html" class="px-4 py-2 border border-slate-700 text-slate-200 rounded hover:bg-slate-800 transition">View Site</a>
-          <a href="login.html" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded transition">Logout</a>
+          <a href="index.html" class="px-4 py-2 border border-slate-700 text-slate-200 rounded-lg hover:bg-slate-800 transition text-sm">View Site</a>
+          <button type="button" onclick="logout()" class="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-bold rounded-lg transition text-sm shadow">
+            Logout
+          </button>
         </div>
       </div>
 
       <!-- quick stats -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="glass p-6 border border-slate-700 rounded">
-          <div class="text-sm text-slate-400 uppercase tracking-widest">Registered Users</div>
-          <div class="mt-3 text-3xl font-black text-white">24</div>
+        <div class="glass p-6 border border-slate-700/80 rounded-2xl shadow-lg">
+          <div class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Registered Users</div>
+          <div id="stat-registered-users" class="mt-3 text-3xl font-black text-white">4</div>
+          <p class="text-xs text-slate-500 mt-2">Active system accounts</p>
         </div>
 
-        <div class="glass p-6 border border-slate-700 rounded">
-          <div class="text-sm text-slate-400 uppercase tracking-widest">Inventory Items</div>
+        <div class="glass p-6 border border-slate-700/80 rounded-2xl shadow-lg">
+          <div class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Inventory Items</div>
           <div class="mt-3 text-3xl font-black text-white">18</div>
+          <p class="text-xs text-slate-500 mt-2">Vehicles ready for financing</p>
         </div>
 
-        <div class="glass p-6 border border-slate-700 rounded">
-          <div class="text-sm text-slate-400 uppercase tracking-widest">Your Role</div>
-          <div class="mt-3 text-2xl font-bold text-cyan-400">Administrator</div>
+        <div class="glass p-6 border border-slate-700/80 rounded-2xl shadow-lg">
+          <div class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Your Access Level</div>
+          <div id="stat-user-role" class="mt-3 text-2xl font-bold text-cyan-400">Administrator</div>
+          <p id="stat-user-email" class="text-xs text-slate-400 mt-2">jorge.admin@kreditcars.com</p>
         </div>
       </div>
 
       <!-- actions -->
       <div class="grid md:grid-cols-3 gap-6 mb-8">
-        <div class="bg-[#081017] border border-slate-700 p-6 rounded glass">
-          <h3 class="text-lg font-bold text-white mb-2">Inventory</h3>
-          <p class="text-slate-400 mb-4">Add, edit, or remove vehicle listings.</p>
+        <div class="bg-[#081017] border border-slate-800 p-6 rounded-2xl glass shadow-lg hover:border-slate-700 transition">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">Inventory Management</h3>
+          <p class="text-slate-400 text-sm mb-4">Add, edit, or remove vehicle listings and specs.</p>
           <div class="flex gap-2">
-            <a href="index.html#inventory" class="px-4 py-2 border border-slate-700 text-slate-200 rounded hover:bg-slate-800 transition">View Inventory</a>
+            <a href="index.html#inventory" class="px-4 py-2 border border-slate-700 text-slate-200 rounded-lg hover:bg-slate-800 transition text-xs font-semibold">View Inventory</a>
           </div>
         </div>
 
-        <div class="bg-[#081017] border border-slate-700 p-6 rounded glass">
-          <h3 class="text-lg font-bold text-white mb-2">Customers</h3>
-          <p class="text-slate-400 mb-4">See customer inquiries and quick contact logs.</p>
-          <a href="customer.html" class="px-4 py-2 border border-slate-700 text-slate-200 rounded hover:bg-slate-800 transition">View Inquiries</a>
+        <div class="bg-[#081017] border border-slate-800 p-6 rounded-2xl glass shadow-lg hover:border-slate-700 transition">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 flex items-center justify-center font-bold mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">Customer Inquiries</h3>
+          <p class="text-slate-400 text-sm mb-4">Review customer applications and financing requests.</p>
+          <a href="customer.html" class="px-4 py-2 border border-slate-700 text-slate-200 rounded-lg hover:bg-slate-800 transition text-xs font-semibold inline-block">View Inquiries</a>
         </div>
 
-        <div class="bg-[#081017] border border-slate-700 p-6 rounded glass">
-          <h3 class="text-lg font-bold text-white mb-2">Activity Log</h3>
-          <p class="text-slate-400 mb-4">Review system activity, logins, and audit records.</p>
-          <a href="activity.html" class="px-4 py-2 border border-slate-700 text-slate-200 rounded hover:bg-slate-800 transition">View Activity</a>
+        <div class="bg-[#081017] border border-slate-800 p-6 rounded-2xl glass shadow-lg hover:border-slate-700 transition">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-bold mb-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-white mb-2">Staff & Users</h3>
+          <p class="text-slate-400 text-sm mb-4">Manage staff roster and system user permissions.</p>
+          <div class="flex gap-2">
+            <a href="staff.html" class="px-3 py-2 border border-slate-700 text-slate-200 rounded-lg hover:bg-slate-800 transition text-xs font-semibold">Staff Roster</a>
+            <a href="register.html" class="px-3 py-2 border border-slate-700 text-slate-200 rounded-lg hover:bg-slate-800 transition text-xs font-semibold">User Accounts</a>
+          </div>
         </div>
       </div>
     </div>
   </main>
 
   <!-- FOOTER -->
-  <footer class="bg-black text-slate-500 py-8 border-t border-slate-900">
+  <footer class="bg-black text-slate-500 py-8 border-t border-slate-900 mt-auto">
     <div class="max-w-6xl mx-auto px-6 flex items-center justify-between text-sm">
       <p>© 2026 KreditCars. All rights reserved.</p>
       <div class="flex items-center gap-2">
@@ -148,14 +186,76 @@
   </footer>
 
   <script>
-    // mobile menu toggle
+    const STORAGE_KEY_SESSION = 'kreditcars_logged_in_user';
+    const STORAGE_KEY_USERS = 'kreditcars_users_list';
+    const STORAGE_KEY_DELETED = 'kreditcars_deleted_users';
+    const STORAGE_KEY_DELETED_STAFF = 'kreditcars_deleted_staff';
+
+    // Mobile menu toggle
     const mobileBtn = document.getElementById('mobile-btn');
-    if (mobileBtn) {
-      mobileBtn.addEventListener('click', function(){
-        const menu = document.getElementById('mobile-menu');
-        if (menu) menu.classList.toggle('hidden');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileBtn && mobileMenu) {
+      mobileBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('hidden');
       });
     }
+
+    // Logout handler
+    function logout() {
+      localStorage.removeItem(STORAGE_KEY_SESSION);
+      sessionStorage.removeItem(STORAGE_KEY_SESSION);
+      window.location.href = 'login.html';
+    }
+
+    // Load active registered users count
+    function getRegisteredUsersCount() {
+      try {
+        const d1 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+        const d2 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_STAFF) || '[]');
+        const deletedIds = Array.from(new Set(d1.concat(d2).map(String)));
+
+        const data = localStorage.getItem(STORAGE_KEY_USERS);
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed)) {
+            return parsed.filter(u => !deletedIds.includes(String(u.id))).length;
+          }
+        }
+      } catch (err) {}
+      return 4; // default
+    }
+
+    // Populate user profile info
+    function initDashboard() {
+      try {
+        const sessionRaw = localStorage.getItem(STORAGE_KEY_SESSION) || sessionStorage.getItem(STORAGE_KEY_SESSION);
+        if (!sessionRaw) {
+          window.location.replace('login.html');
+          return;
+        }
+
+        const user = JSON.parse(sessionRaw);
+
+        const displayName = document.getElementById('user-display-name');
+        const displayRole = document.getElementById('user-display-role');
+        const statUsers = document.getElementById('stat-registered-users');
+        const statRole = document.getElementById('stat-user-role');
+        const statEmail = document.getElementById('stat-user-email');
+
+        if (displayName) displayName.textContent = user.fullname || user.username || 'User';
+
+        const roleText = (user.role || '').toLowerCase() === 'admin' ? 'Administrator' : 'Staff Member';
+        if (displayRole) displayRole.textContent = roleText;
+        if (statRole) statRole.textContent = roleText;
+        if (statEmail) statEmail.textContent = user.email || '—';
+
+        if (statUsers) statUsers.textContent = getRegisteredUsersCount();
+      } catch (err) {
+        console.error('Error initializing dashboard:', err);
+      }
+    }
+
+    initDashboard();
   </script>
 </body>
 </html>

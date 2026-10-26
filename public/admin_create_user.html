@@ -23,6 +23,24 @@
         #07101a;
     }
   </style>
+  <script>
+    // Immediate anti-flash check for deleted users before rendering
+    (function() {
+      try {
+        var d1 = JSON.parse(localStorage.getItem('kreditcars_deleted_users') || '[]');
+        var d2 = JSON.parse(localStorage.getItem('kreditcars_deleted_staff') || '[]');
+        var allDeleted = Array.from(new Set(d1.concat(d2).map(String)));
+        if (allDeleted.length > 0) {
+          var style = document.createElement('style');
+          style.id = 'anti-flash-deleted-users';
+          style.textContent = allDeleted.map(function(id) {
+            return '.user-row[data-id="' + id + '"] { display: none !important; }';
+          }).join(' ');
+          document.head.appendChild(style);
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 
 <body class="bg-[#07101a] text-white min-h-screen flex flex-col font-sans antialiased">
@@ -333,6 +351,155 @@
 
   <!-- SCRIPT -->
   <script>
+    // Storage keys for persistent users & staff
+    const STORAGE_KEY_USERS = 'kreditcars_users_list';
+    const STORAGE_KEY_DELETED = 'kreditcars_deleted_users';
+    const STORAGE_KEY_DELETED_STAFF = 'kreditcars_deleted_staff';
+
+    // Default users catalog (Jorge Admin is admin, others are staff)
+    const DEFAULT_USERS = [
+      {
+        id: '1',
+        fullname: 'Jorge Admin',
+        username: 'admin_jorge',
+        email: 'jorge.admin@kreditcars.com',
+        role: 'admin',
+        password: 'admin123',
+        created: 'Oct 15, 2026',
+        contact: '+63 912 345 6789',
+        canDelete: false
+      },
+      {
+        id: '2',
+        fullname: 'Maria Santos',
+        username: 'maria.santos',
+        email: 'maria.santos@kreditcars.com',
+        role: 'staff',
+        password: 'password123',
+        created: 'Oct 18, 2026',
+        contact: '+63 917 123 4567',
+        canDelete: true
+      },
+      {
+        id: '3',
+        fullname: 'Robert Diaz',
+        username: 'robert.diaz',
+        email: 'robert.diaz@kreditcars.com',
+        role: 'staff',
+        password: 'password123',
+        created: 'Oct 19, 2026',
+        contact: '+63 918 234 5678',
+        canDelete: true
+      },
+      {
+        id: '4',
+        fullname: 'Angela Reyes',
+        username: 'angela.reyes',
+        email: 'angela.reyes@kreditcars.com',
+        role: 'staff',
+        password: 'password123',
+        created: 'Oct 20, 2026',
+        contact: '+63 920 345 6789',
+        canDelete: true
+      }
+    ];
+
+    // Helper: Escape HTML
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Get all permanently deleted user/staff IDs
+    function getDeletedUserIds() {
+      try {
+        const d1 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+        const d2 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_STAFF) || '[]');
+        return Array.from(new Set(d1.concat(d2).map(String)));
+      } catch (err) {
+        return [];
+      }
+    }
+
+    // Permanently record deleted user ID across all user/staff storage keys
+    function saveDeletedUserId(id) {
+      try {
+        const strId = String(id);
+        const d1 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]');
+        if (!d1.map(String).includes(strId)) {
+          d1.push(strId);
+          localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(d1));
+        }
+        const d2 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_STAFF) || '[]');
+        if (!d2.map(String).includes(strId)) {
+          d2.push(strId);
+          localStorage.setItem(STORAGE_KEY_DELETED_STAFF, JSON.stringify(d2));
+        }
+      } catch (err) {
+        console.error('Error saving deleted user id:', err);
+      }
+    }
+
+    // Retrieve active users from localStorage (or initialize with defaults)
+    function getUsers() {
+      const deletedIds = getDeletedUserIds();
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_USERS);
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (Array.isArray(parsed)) {
+            return parsed.filter(u => !deletedIds.includes(String(u.id)));
+          }
+        }
+      } catch (err) {
+        console.error('Error loading users from localStorage:', err);
+      }
+
+      // Initialize defaults excluding any deleted accounts
+      const initial = DEFAULT_USERS.filter(u => !deletedIds.includes(String(u.id)));
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(initial));
+      } catch (err) {}
+      return initial;
+    }
+
+    // Save users list to localStorage
+    function saveUsers(users) {
+      try {
+        localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+      } catch (err) {
+        console.error('Error saving users to localStorage:', err);
+      }
+    }
+
+    // Permanently delete user
+    function deleteUserAccount(id) {
+      const strId = String(id);
+      saveDeletedUserId(strId);
+      const current = getUsers().filter(u => String(u.id) !== strId);
+      saveUsers(current);
+      return current;
+    }
+
+    // Add new user
+    function addUserAccount(user) {
+      const users = getUsers();
+      users.unshift(user);
+      saveUsers(users);
+    }
+
+    // Generate unique ID for new user
+    function generateNextUserId() {
+      const users = getUsers();
+      const maxId = users.reduce((max, u) => Math.max(max, parseInt(u.id, 10) || 0), 4);
+      return String(maxId + 1);
+    }
+
     // Mobile navigation toggle
     const mobileBtn = document.getElementById('mobile-btn');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -441,15 +608,19 @@
       });
     }
 
-    // Delete user handler
+    // Delete user handler with permanent deletion
     function deleteUser(userId, name) {
-      const row = document.querySelector(`.user-row[data-id="${userId}"]`);
       showConfirmModal({
         title: 'Delete User Account',
-        message: `Delete user account for <span class="font-bold text-white">${name}</span>? This action cannot be undone and will revoke their system access immediately.`,
+        message: `Delete user account for <span class="font-bold text-white">${escapeHtml(name)}</span>? This action cannot be undone and will permanently revoke their system access.`,
         confirmText: 'Yes, Delete',
         isDanger: true,
         onConfirm: function() {
+          // 1. Permanently remove from localStorage
+          deleteUserAccount(userId);
+
+          // 2. Animate and remove row from DOM
+          const row = document.querySelector(`.user-row[data-id="${userId}"]`);
           if (row) {
             row.style.transition = 'all 0.3s ease';
             row.style.opacity = '0';
@@ -458,14 +629,62 @@
               row.remove();
               updateUserCount();
             }, 300);
+          } else {
+            renderUsersTable();
           }
-          showFlash('success', `User "${name}" was deleted successfully.`);
+
+          showFlash('success', `User "${name}" was deleted permanently.`);
         }
       });
     }
 
+    // Render users table dynamically from localStorage
+    function renderUsersTable() {
+      const users = getUsers();
+      const tbody = document.getElementById('users-tbody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      users.forEach(user => {
+        const isAdmin = (user.role || '').toLowerCase() === 'admin';
+        const roleBadge = isAdmin
+          ? '<span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">Admin</span>'
+          : '<span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>';
+
+        const isLocked = user.canDelete === false || String(user.id) === '1';
+        const actionHtml = isLocked
+          ? '<span class="text-slate-600 text-xs italic" title="Logged in account cannot be deleted">Active</span>'
+          : `<button type="button" class="btn-delete-user bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">Delete</button>`;
+
+        const tr = document.createElement('tr');
+        tr.className = 'user-row hover:bg-slate-900/40 transition';
+        tr.setAttribute('data-id', user.id);
+        tr.innerHTML = `
+          <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">${escapeHtml(user.fullname)}</td>
+          <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">${escapeHtml(user.username)}</td>
+          <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">${escapeHtml(user.email)}</td>
+          <td class="py-3 px-3 whitespace-nowrap">${roleBadge}</td>
+          <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">${escapeHtml(user.created || '—')}</td>
+          <td class="py-3 px-3 text-center whitespace-nowrap">${actionHtml}</td>
+        `;
+
+        if (!isLocked) {
+          const btn = tr.querySelector('.btn-delete-user');
+          if (btn) {
+            btn.addEventListener('click', function() {
+              deleteUser(user.id, user.fullname);
+            });
+          }
+        }
+
+        tbody.appendChild(tr);
+      });
+
+      updateUserCount();
+    }
+
     // Form submission handler
-    let nextId = 5;
     const createForm = document.getElementById('create-user-form');
     if (createForm) {
       createForm.addEventListener('submit', function (e) {
@@ -482,16 +701,11 @@
           return;
         }
 
-        // Check if username or email already exists in table
-        const existingUsers = Array.from(document.querySelectorAll('.user-row'));
-        const duplicate = existingUsers.some(r => {
-          const cells = r.querySelectorAll('td');
-          if (cells.length >= 3) {
-            const rowUname = cells[1].textContent.trim().toLowerCase();
-            const rowEmail = cells[2].textContent.trim().toLowerCase();
-            return rowUname === username.toLowerCase() || rowEmail === email.toLowerCase();
-          }
-          return false;
+        // Check if username or email already exists in storage
+        const currentUsers = getUsers();
+        const duplicate = currentUsers.some(u => {
+          return (u.username || '').toLowerCase() === username.toLowerCase() ||
+                 (u.email || '').toLowerCase() === email.toLowerCase();
         });
 
         if (duplicate) {
@@ -501,35 +715,32 @@
 
         // Format today's date
         const today = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
-        const currentId = nextId++;
-        const roleBadge = role === 'admin' 
-          ? '<span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">Admin</span>'
-          : '<span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>';
+        const newId = generateNextUserId();
 
-        // Insert row at top of tbody
-        const tbody = document.getElementById('users-tbody');
-        const newRow = document.createElement('tr');
-        newRow.className = 'user-row hover:bg-slate-900/40 transition';
-        newRow.setAttribute('data-id', currentId);
-        newRow.innerHTML = `
-          <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">${fullname}</td>
-          <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">${username}</td>
-          <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">${email}</td>
-          <td class="py-3 px-3 whitespace-nowrap">${roleBadge}</td>
-          <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">${today}</td>
-          <td class="py-3 px-3 text-center whitespace-nowrap">
-            <button type="button" onclick="deleteUser(${currentId}, '${fullname.replace(/'/g, "\\'")}')" class="bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">
-              Delete
-            </button>
-          </td>
-        `;
+        const newUser = {
+          id: newId,
+          fullname: fullname,
+          username: username,
+          email: email,
+          password: password,
+          role: role,
+          created: today,
+          contact: '',
+          canDelete: true
+        };
 
-        tbody.prepend(newRow);
-        updateUserCount();
+        // 1. Permanently store in localStorage
+        addUserAccount(newUser);
+
+        // 2. Refresh UI table
+        renderUsersTable();
         createForm.reset();
         showFlash('success', `User "${fullname}" created successfully.`);
       });
     }
+
+    // Initialize users table on page load
+    renderUsersTable();
   </script>
 </body>
 </html>
