@@ -90,7 +90,7 @@
           <div class="flex items-center gap-3">
             <h1 class="text-2xl md:text-3xl font-bold text-white italic">Featured <span class="text-amber-500">Items</span></h1>
             <span id="vehicle-count-badge" class="px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold uppercase tracking-wider">
-              3 Available
+              0 Available
             </span>
           </div>
           <p class="text-sm text-slate-400 mt-1">Explore and manage available pre-owned vehicle inventory</p>
@@ -109,128 +109,8 @@
       <!-- Featured grid -->
       <div id="featured-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-        <!-- Car Card 1 -->
-        <div class="car-card group bg-[#0B1320] border border-slate-800 rounded-xl overflow-hidden flex flex-col hover:border-amber-500/50 transition duration-200" data-id="1" data-name="Toyota Vios 1.5 G">
-          <div class="relative h-52 bg-slate-900 flex items-center justify-center border-b border-slate-800 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#0B1320] to-slate-900/50 flex items-center justify-center">
-              <svg class="w-16 h-16 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-              </svg>
-            </div>
-            <div class="absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-amber-500">
-              Second Hand
-            </div>
-          </div>
-
-          <div class="p-5 flex-1 flex flex-col">
-            <h3 class="text-lg font-bold text-white italic mb-1 group-hover:text-amber-500 transition">
-              Toyota Vios 1.5 G
-            </h3>
-            <div class="flex gap-4 text-xs text-slate-400 font-mono mb-6 uppercase">
-              <span>35,000 mi</span>
-              <span>•</span>
-              <span>2021</span>
-            </div>
-
-            <!-- Card footer: Price + Buttons -->
-            <div class="mt-auto flex items-center justify-between pt-4 border-t border-slate-800 gap-2">
-              <span class="text-xl font-bold text-cyan-400">₱650,000</span>
-
-              <div class="flex gap-2">
-                <a href="detail.html?id=1" class="bg-slate-800 hover:bg-amber-500 hover:text-black text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                  Details
-                </a>
-                <button type="button" onclick="confirmDeleteCar(1, 'Toyota Vios 1.5 G')" class="bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Car Card 2 -->
-        <div class="car-card group bg-[#0B1320] border border-slate-800 rounded-xl overflow-hidden flex flex-col hover:border-amber-500/50 transition duration-200" data-id="2" data-name="Mitsubishi Montero Sport">
-          <div class="relative h-52 bg-slate-900 flex items-center justify-center border-b border-slate-800 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#0B1320] to-slate-900/50 flex items-center justify-center">
-              <svg class="w-16 h-16 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-              </svg>
-            </div>
-            <div class="absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-amber-500">
-              Second Hand
-            </div>
-          </div>
-
-          <div class="p-5 flex-1 flex flex-col">
-            <h3 class="text-lg font-bold text-white italic mb-1 group-hover:text-amber-500 transition">
-              Mitsubishi Montero Sport
-            </h3>
-            <div class="flex gap-4 text-xs text-slate-400 font-mono mb-6 uppercase">
-              <span>42,000 mi</span>
-              <span>•</span>
-              <span>2020</span>
-            </div>
-
-            <!-- Card footer: Price + Buttons -->
-            <div class="mt-auto flex items-center justify-between pt-4 border-t border-slate-800 gap-2">
-              <span class="text-xl font-bold text-cyan-400">₱1,180,000</span>
-
-              <div class="flex gap-2">
-                <a href="detail.html?id=2" class="bg-slate-800 hover:bg-amber-500 hover:text-black text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                  Details
-                </a>
-                <button type="button" onclick="confirmDeleteCar(2, 'Mitsubishi Montero Sport')" class="bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Car Card 3 -->
-        <div class="car-card group bg-[#0B1320] border border-slate-800 rounded-xl overflow-hidden flex flex-col hover:border-amber-500/50 transition duration-200" data-id="3" data-name="Ford Ranger Wildtrak">
-          <div class="relative h-52 bg-slate-900 flex items-center justify-center border-b border-slate-800 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#0B1320] to-slate-900/50 flex items-center justify-center">
-              <svg class="w-16 h-16 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
-              </svg>
-            </div>
-            <div class="absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 border-emerald-500">
-              New
-            </div>
-          </div>
-
-          <div class="p-5 flex-1 flex flex-col">
-            <h3 class="text-lg font-bold text-white italic mb-1 group-hover:text-amber-500 transition">
-              Ford Ranger Wildtrak
-            </h3>
-            <div class="flex gap-4 text-xs text-slate-400 font-mono mb-6 uppercase">
-              <span>12,000 mi</span>
-              <span>•</span>
-              <span>2023</span>
-            </div>
-
-            <!-- Card footer: Price + Buttons -->
-            <div class="mt-auto flex items-center justify-between pt-4 border-t border-slate-800 gap-2">
-              <span class="text-xl font-bold text-cyan-400">₱1,450,000</span>
-
-              <div class="flex gap-2">
-                <a href="detail.html?id=3" class="bg-slate-800 hover:bg-amber-500 hover:text-black text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                  Details
-                </a>
-                <button type="button" onclick="confirmDeleteCar(3, 'Ford Ranger Wildtrak')" class="bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Empty state card (hidden by default) -->
-        <div id="empty-state" class="hidden col-span-full py-16 text-center bg-[#0B1320]/50 border border-slate-800 rounded-2xl">
+        <!-- Empty state card -->
+        <div id="empty-state" class="col-span-full py-16 text-center bg-[#0B1320]/50 border border-slate-800 rounded-2xl">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-500 border border-slate-700">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -241,9 +121,6 @@
           <div class="flex items-center justify-center gap-3">
             <button onclick="document.getElementById('toggle-add-form').click()" class="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-xs shadow">
               <span class="inline-block skew-x-6">+ Add First Vehicle</span>
-            </button>
-            <button id="reset-inventory-btn" type="button" onclick="resetInventoryCatalog()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white px-4 py-2 uppercase font-semibold text-xs rounded transition border border-slate-700">
-              Reset Demo Catalog
             </button>
           </div>
         </div>
@@ -719,21 +596,6 @@
           }
 
           showFlash('success', `Vehicle "${name}" was permanently removed from inventory.`);
-        }
-      });
-    }
-
-    // Reset Demo Catalog
-    function resetInventoryCatalog() {
-      showConfirmModal({
-        title: 'Reset Inventory Catalog',
-        message: 'Restore all default vehicles back to the inventory?',
-        confirmText: 'Reset Catalog',
-        isDanger: false,
-        onConfirm: function() {
-          localStorage.removeItem(STORAGE_KEY_DELETED);
-          localStorage.removeItem(STORAGE_KEY_CUSTOM);
-          window.location.reload();
         }
       });
     }
