@@ -649,6 +649,16 @@
 
     // Initialize staff roster immediately
     renderStaff();
+
+    // Listen for storage events or tab focus to keep staff table in sync
+    window.addEventListener('storage', function (e) {
+      if (!e.key || e.key === STORAGE_KEY_USERS || e.key === STORAGE_KEY_DELETED || e.key === STORAGE_KEY_DELETED_STAFF) {
+        renderStaff();
+      }
+    });
+    window.addEventListener('focus', function () {
+      renderStaff();
+    });
   </script>
 </body>
 </html>

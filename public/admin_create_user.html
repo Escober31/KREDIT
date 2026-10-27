@@ -145,6 +145,12 @@
           </div>
 
           <div>
+            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1.5" for="contact">Phone Number</label>
+            <input id="contact" name="contact" type="tel" placeholder="e.g. +63 912 345 6789"
+              class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500 focus:border-amber-500 focus:outline-none transition text-sm">
+          </div>
+
+          <div>
             <label class="block text-xs font-semibold uppercase text-slate-400 mb-1.5" for="password">Password</label>
             <input id="password" name="password" required type="password" placeholder="••••••••••••"
               class="w-full p-3 rounded-lg bg-slate-900 border border-slate-700 text-slate-200 placeholder-slate-500 focus:border-amber-500 focus:outline-none transition text-sm">
@@ -194,67 +200,7 @@
             </thead>
 
             <tbody id="users-tbody" class="divide-y divide-slate-800/80">
-              <!-- User 1 -->
-              <tr class="user-row hover:bg-slate-900/40 transition" data-id="1">
-                <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">Jorge Admin</td>
-                <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">admin_jorge</td>
-                <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">jorge.admin@kreditcars.com</td>
-                <td class="py-3 px-3 whitespace-nowrap">
-                  <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">Admin</span>
-                </td>
-                <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">Oct 15, 2026</td>
-                <td class="py-3 px-3 text-center whitespace-nowrap">
-                  <span class="text-slate-600 text-xs italic" title="Logged in account cannot be deleted">Active</span>
-                </td>
-              </tr>
-
-              <!-- User 2 -->
-              <tr class="user-row hover:bg-slate-900/40 transition" data-id="2">
-                <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">Maria Santos</td>
-                <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">maria.santos</td>
-                <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">maria.santos@kreditcars.com</td>
-                <td class="py-3 px-3 whitespace-nowrap">
-                  <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>
-                </td>
-                <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">Oct 18, 2026</td>
-                <td class="py-3 px-3 text-center whitespace-nowrap">
-                  <button type="button" onclick="deleteUser(2, 'Maria Santos')" class="bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">
-                    Delete
-                  </button>
-                </td>
-              </tr>
-
-              <!-- User 3 -->
-              <tr class="user-row hover:bg-slate-900/40 transition" data-id="3">
-                <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">Robert Diaz</td>
-                <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">robert.diaz</td>
-                <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">robert.diaz@kreditcars.com</td>
-                <td class="py-3 px-3 whitespace-nowrap">
-                  <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>
-                </td>
-                <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">Oct 19, 2026</td>
-                <td class="py-3 px-3 text-center whitespace-nowrap">
-                  <button type="button" onclick="deleteUser(3, 'Robert Diaz')" class="bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">
-                    Delete
-                  </button>
-                </td>
-              </tr>
-
-              <!-- User 4 -->
-              <tr class="user-row hover:bg-slate-900/40 transition" data-id="4">
-                <td class="py-3 px-3.5 font-medium text-white whitespace-nowrap">Angela Reyes</td>
-                <td class="py-3 px-3 text-slate-300 font-mono text-xs whitespace-nowrap">angela.reyes</td>
-                <td class="py-3 px-3 text-cyan-400 whitespace-nowrap">angela.reyes@kreditcars.com</td>
-                <td class="py-3 px-3 whitespace-nowrap">
-                  <span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>
-                </td>
-                <td class="py-3 px-3 text-slate-400 text-xs whitespace-nowrap">Oct 20, 2026</td>
-                <td class="py-3 px-3 text-center whitespace-nowrap">
-                  <button type="button" onclick="deleteUser(4, 'Angela Reyes')" class="bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">
-                    Delete
-                  </button>
-                </td>
-              </tr>
+              <!-- Dynamically populated by renderUsersTable() -->
             </tbody>
           </table>
         </div>
@@ -352,9 +298,37 @@
   <!-- SCRIPT -->
   <script>
     // Storage keys for persistent users & staff
+    const STORAGE_KEY_SESSION = 'kreditcars_logged_in_user';
     const STORAGE_KEY_USERS = 'kreditcars_users_list';
     const STORAGE_KEY_DELETED = 'kreditcars_deleted_users';
     const STORAGE_KEY_DELETED_STAFF = 'kreditcars_deleted_staff';
+
+    // Helper: Retrieve active logged-in session user
+    function getLoggedInUser() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_SESSION) || sessionStorage.getItem(STORAGE_KEY_SESSION);
+        if (raw) return JSON.parse(raw);
+      } catch (err) {}
+      return null;
+    }
+
+    // Check if account is currently online / active
+    function isUserOnline(user) {
+      if (!user) return false;
+      const loggedIn = getLoggedInUser();
+      if (loggedIn) {
+        if (loggedIn.id && String(loggedIn.id) === String(user.id)) return true;
+        if (loggedIn.username && user.username && loggedIn.username.toLowerCase() === user.username.toLowerCase()) return true;
+        if (loggedIn.email && user.email && loggedIn.email.toLowerCase() === user.email.toLowerCase()) return true;
+      } else {
+        // If no user has logged in yet, default admin (id: '1') is treated as the online account
+        if (String(user.id) === '1' || user.canDelete === false) return true;
+      }
+      if (user.isOnline === true || user.online === true || String(user.status || '').toLowerCase() === 'online') {
+        return true;
+      }
+      return false;
+    }
 
     // Default users catalog (Jorge Admin is admin, others are staff)
     const DEFAULT_USERS = [
@@ -486,18 +460,71 @@
       return current;
     }
 
-    // Add new user
+    // Add new user permanently
     function addUserAccount(user) {
-      const users = getUsers();
+      const strId = String(user.id);
+
+      // Ensure this ID is cleared from any deleted lists
+      try {
+        const d1 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED) || '[]').filter(id => String(id) !== strId);
+        const d2 = JSON.parse(localStorage.getItem(STORAGE_KEY_DELETED_STAFF) || '[]').filter(id => String(id) !== strId);
+        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(d1));
+        localStorage.setItem(STORAGE_KEY_DELETED_STAFF, JSON.stringify(d2));
+
+        // Clean up runtime anti-flash style tag if present
+        const style = document.getElementById('anti-flash-deleted-users');
+        if (style) {
+          const remaining = Array.from(new Set(d1.concat(d2).map(String)));
+          if (remaining.length > 0) {
+            style.textContent = remaining.map(id => '.user-row[data-id="' + id + '"] { display: none !important; }').join(' ');
+          } else {
+            style.remove();
+          }
+        }
+      } catch (err) {}
+
+      const users = getUsers().filter(u => String(u.id) !== strId);
       users.unshift(user);
       saveUsers(users);
     }
 
-    // Generate unique ID for new user
+    // Generate unique ID for new user that has never been used or deleted
     function generateNextUserId() {
-      const users = getUsers();
-      const maxId = users.reduce((max, u) => Math.max(max, parseInt(u.id, 10) || 0), 4);
-      return String(maxId + 1);
+      let maxId = 4;
+      const existingIds = new Set();
+
+      DEFAULT_USERS.forEach(u => {
+        existingIds.add(String(u.id));
+        const n = parseInt(u.id, 10);
+        if (!isNaN(n) && n > maxId) maxId = n;
+      });
+
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_USERS);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            parsed.forEach(u => {
+              existingIds.add(String(u.id));
+              const n = parseInt(u.id, 10);
+              if (!isNaN(n) && n > maxId) maxId = n;
+            });
+          }
+        }
+      } catch (err) {}
+
+      const deletedIds = getDeletedUserIds();
+      deletedIds.forEach(id => {
+        existingIds.add(String(id));
+        const n = parseInt(id, 10);
+        if (!isNaN(n) && n > maxId) maxId = n;
+      });
+
+      let candidate = maxId + 1;
+      while (existingIds.has(String(candidate))) {
+        candidate++;
+      }
+      return String(candidate);
     }
 
     // Mobile navigation toggle
@@ -610,6 +637,12 @@
 
     // Delete user handler with permanent deletion
     function deleteUser(userId, name) {
+      const user = getUsers().find(u => String(u.id) === String(userId));
+      if (user && isUserOnline(user)) {
+        showFlash('error', 'Online account is currently active and cannot be deleted.');
+        return;
+      }
+
       showConfirmModal({
         title: 'Delete User Account',
         message: `Delete user account for <span class="font-bold text-white">${escapeHtml(name)}</span>? This action cannot be undone and will permanently revoke their system access.`,
@@ -652,9 +685,9 @@
           ? '<span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">Admin</span>'
           : '<span class="px-2 py-0.5 rounded text-[11px] font-bold uppercase bg-blue-500/20 text-blue-400 border border-blue-500/30">Staff</span>';
 
-        const isLocked = user.canDelete === false || String(user.id) === '1';
-        const actionHtml = isLocked
-          ? '<span class="text-slate-600 text-xs italic" title="Logged in account cannot be deleted">Active</span>'
+        const online = isUserOnline(user);
+        const actionHtml = online
+          ? '<span class="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-1 rounded shadow-sm" title="Logged in account is currently active"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>Active</span>'
           : `<button type="button" class="btn-delete-user bg-red-500 hover:bg-red-600 active:scale-95 px-3 py-1 rounded text-xs font-bold transition shadow">Delete</button>`;
 
         const tr = document.createElement('tr');
@@ -669,7 +702,7 @@
           <td class="py-3 px-3 text-center whitespace-nowrap">${actionHtml}</td>
         `;
 
-        if (!isLocked) {
+        if (!online) {
           const btn = tr.querySelector('.btn-delete-user');
           if (btn) {
             btn.addEventListener('click', function() {
@@ -693,6 +726,7 @@
         const fullname = document.getElementById('fullname').value.trim();
         const username = document.getElementById('username').value.trim();
         const email = document.getElementById('email').value.trim();
+        const contact = (document.getElementById('contact') ? document.getElementById('contact').value : '').trim();
         const password = document.getElementById('password').value;
         const role = document.getElementById('role').value;
 
@@ -725,7 +759,7 @@
           password: password,
           role: role,
           created: today,
-          contact: '',
+          contact: contact,
           canDelete: true
         };
 
@@ -741,6 +775,16 @@
 
     // Initialize users table on page load
     renderUsersTable();
+
+    // Listen for storage events or tab focus to keep tables in sync across tabs
+    window.addEventListener('storage', function (e) {
+      if (!e.key || e.key === STORAGE_KEY_USERS || e.key === STORAGE_KEY_DELETED || e.key === STORAGE_KEY_DELETED_STAFF) {
+        renderUsersTable();
+      }
+    });
+    window.addEventListener('focus', function () {
+      renderUsersTable();
+    });
   </script>
 </body>
 </html>

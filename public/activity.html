@@ -25,6 +25,22 @@
     .checkbox-col { width: 44px; text-align: center; }
     .hidden-checkbox { display: none !important; }
   </style>
+  <script>
+    // Immediate anti-flash check for permanently deleted activities before rendering
+    (function() {
+      try {
+        var deleted = JSON.parse(localStorage.getItem('kreditcars_deleted_activities') || '[]');
+        if (Array.isArray(deleted) && deleted.length > 0) {
+          var style = document.createElement('style');
+          style.id = 'anti-flash-deleted-activities';
+          style.textContent = deleted.map(function(id) {
+            return '.log-row[data-id="' + id + '"] { display: none !important; }';
+          }).join(' ');
+          document.head.appendChild(style);
+        }
+      } catch (e) {}
+    })();
+  </script>
 </head>
 
 <body class="bg-[#07101a] text-slate-200 min-h-screen font-sans flex flex-col antialiased">
@@ -147,6 +163,7 @@
               <th class="p-3 text-center font-semibold">Details</th>
               <th class="p-3 text-center font-semibold">IP</th>
               <th class="p-3 text-center font-semibold">Date</th>
+              <th class="p-3 text-center font-semibold">Manage</th>
             </tr>
           </thead>
 
@@ -166,6 +183,11 @@
               </td>
               <td class="p-3 text-center text-slate-400 font-mono text-xs">192.168.1.10</td>
               <td class="p-3 text-center text-slate-400 text-xs">2026-10-21 17:35:10</td>
+              <td class="p-3 text-center whitespace-nowrap">
+                <button type="button" onclick="confirmDeleteSingleActivity('1', 'USER_LOGIN — admin_jorge')" class="bg-red-600/80 hover:bg-red-600 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded transition shadow">
+                  Delete
+                </button>
+              </td>
             </tr>
 
             <!-- Row 2 -->
@@ -183,6 +205,11 @@
               </td>
               <td class="p-3 text-center text-slate-400 font-mono text-xs">192.168.1.45</td>
               <td class="p-3 text-center text-slate-400 text-xs">2026-10-21 16:12:05</td>
+              <td class="p-3 text-center whitespace-nowrap">
+                <button type="button" onclick="confirmDeleteSingleActivity('2', 'CUSTOMER_ADD — maria.santos')" class="bg-red-600/80 hover:bg-red-600 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded transition shadow">
+                  Delete
+                </button>
+              </td>
             </tr>
 
             <!-- Row 3 -->
@@ -200,6 +227,11 @@
               </td>
               <td class="p-3 text-center text-slate-400 font-mono text-xs">192.168.1.10</td>
               <td class="p-3 text-center text-slate-400 text-xs">2026-10-21 15:40:22</td>
+              <td class="p-3 text-center whitespace-nowrap">
+                <button type="button" onclick="confirmDeleteSingleActivity('3', 'STAFF_APPROVE — admin_jorge')" class="bg-red-600/80 hover:bg-red-600 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded transition shadow">
+                  Delete
+                </button>
+              </td>
             </tr>
 
             <!-- Row 4 -->
@@ -217,6 +249,11 @@
               </td>
               <td class="p-3 text-center text-slate-400 font-mono text-xs">192.168.1.88</td>
               <td class="p-3 text-center text-slate-400 text-xs">2026-10-21 14:05:18</td>
+              <td class="p-3 text-center whitespace-nowrap">
+                <button type="button" onclick="confirmDeleteSingleActivity('4', 'CAR_UPDATE — robert.diaz')" class="bg-red-600/80 hover:bg-red-600 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded transition shadow">
+                  Delete
+                </button>
+              </td>
             </tr>
 
             <!-- Row 5 -->
@@ -234,6 +271,11 @@
               </td>
               <td class="p-3 text-center text-slate-400 font-mono text-xs">112.198.42.15</td>
               <td class="p-3 text-center text-slate-400 text-xs">2026-10-21 13:22:49</td>
+              <td class="p-3 text-center whitespace-nowrap">
+                <button type="button" onclick="confirmDeleteSingleActivity('5', 'INQUIRY_SENT — carlos_m')" class="bg-red-600/80 hover:bg-red-600 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded transition shadow">
+                  Delete
+                </button>
+              </td>
             </tr>
 
             <!-- Row 6 -->
@@ -251,11 +293,16 @@
               </td>
               <td class="p-3 text-center text-slate-400 font-mono text-xs">127.0.0.1</td>
               <td class="p-3 text-center text-slate-400 text-xs">2026-10-21 12:00:00</td>
+              <td class="p-3 text-center whitespace-nowrap">
+                <button type="button" onclick="confirmDeleteSingleActivity('6', 'BACKUP_GENERATE — admin_jorge')" class="bg-red-600/80 hover:bg-red-600 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded transition shadow">
+                  Delete
+                </button>
+              </td>
             </tr>
 
             <!-- Empty Row (hidden by default) -->
             <tr id="empty-row" class="hidden">
-              <td colspan="7" class="p-8 text-center text-slate-500">
+              <td colspan="8" class="p-8 text-center text-slate-500">
                 <div class="flex flex-col items-center justify-center gap-2">
                   <svg class="w-8 h-8 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                   <span>No activity found</span>
@@ -279,6 +326,41 @@
     </div>
 
   </main>
+
+  <!-- CONFIRMATION POP-OUT MODAL -->
+  <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0B1320] border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative transform transition-all animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Close 'X' button -->
+      <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold leading-none p-1">&times;</button>
+
+      <div class="flex items-start gap-4">
+        <!-- Icon container -->
+        <div id="modal-icon-container" class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-500/10 border border-red-500/30 text-red-500">
+          <svg id="modal-icon-danger" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+        </div>
+
+        <div class="flex-1 pr-2">
+          <h3 id="modal-title" class="text-lg font-bold text-white italic">Confirm Action</h3>
+          <p id="modal-message" class="text-sm text-slate-300 mt-2 leading-relaxed">
+            Are you sure you want to proceed?
+          </p>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-800">
+        <button id="modal-cancel-btn" type="button" class="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold uppercase tracking-wider transition border border-slate-700">
+          Cancel
+        </button>
+        <button id="modal-confirm-btn" type="button" class="px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- FOOTER -->
   <footer class="bg-black text-slate-500 py-12 border-t border-slate-900 mt-auto">
@@ -359,6 +441,77 @@
       banner.classList.remove('hidden');
     }
 
+    // Storage keys for persistent activity log deletions
+    const STORAGE_KEY_DELETED = 'kreditcars_deleted_activities';
+
+    function getDeletedActivityIds() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY_DELETED);
+        return data ? JSON.parse(data) : [];
+      } catch (err) {
+        return [];
+      }
+    }
+
+    function saveDeletedActivityIds(ids) {
+      try {
+        const deleted = getDeletedActivityIds().map(String);
+        ids.forEach(id => {
+          const strId = String(id);
+          if (!deleted.includes(strId)) {
+            deleted.push(strId);
+          }
+        });
+        localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
+      } catch (err) {
+        console.error('Error saving deleted activity IDs:', err);
+      }
+    }
+
+    // Modal helpers
+    let pendingConfirmAction = null;
+    function showConfirmModal(options) {
+      const modal = document.getElementById('confirm-modal');
+      const titleEl = document.getElementById('modal-title');
+      const msgEl = document.getElementById('modal-message');
+      const confirmBtn = document.getElementById('modal-confirm-btn');
+
+      if (!modal) return;
+      if (titleEl) titleEl.textContent = options.title || 'Confirm Action';
+      if (msgEl) msgEl.innerHTML = options.message || 'Are you sure you want to proceed?';
+      if (confirmBtn) confirmBtn.textContent = options.confirmText || 'Confirm';
+
+      pendingConfirmAction = options.onConfirm || null;
+      modal.classList.remove('hidden');
+    }
+
+    function hideConfirmModal() {
+      const modal = document.getElementById('confirm-modal');
+      if (modal) modal.classList.add('hidden');
+      pendingConfirmAction = null;
+    }
+
+    const modalCancelBtn = document.getElementById('modal-cancel-btn');
+    const modalCloseX = document.getElementById('modal-close-x');
+    const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+    const confirmModal = document.getElementById('confirm-modal');
+
+    if (modalCancelBtn) modalCancelBtn.addEventListener('click', hideConfirmModal);
+    if (modalCloseX) modalCloseX.addEventListener('click', hideConfirmModal);
+    if (confirmModal) {
+      confirmModal.addEventListener('click', function(e) {
+        if (e.target === confirmModal) hideConfirmModal();
+      });
+    }
+    if (modalConfirmBtn) {
+      modalConfirmBtn.addEventListener('click', function() {
+        if (typeof pendingConfirmAction === 'function') {
+          pendingConfirmAction();
+        }
+        hideConfirmModal();
+      });
+    }
+
     // Select mode toggle behavior
     const toggleBtn = document.getElementById('toggle-delete-btn');
     const clearBtn = document.getElementById('clear-selection-btn');
@@ -402,7 +555,48 @@
       }
     }
 
-    // Toggle delete button click
+    // Permanently delete activities by array of IDs
+    function permanentlyDeleteActivities(ids, successMessage) {
+      if (!Array.isArray(ids) || ids.length === 0) return;
+
+      // 1. Permanently record deletion in localStorage
+      saveDeletedActivityIds(ids);
+
+      // 2. Animate and remove from DOM
+      ids.forEach(id => {
+        const row = document.querySelector(`.log-row[data-id="${id}"]`);
+        if (row) {
+          row.style.transition = 'all 0.3s ease';
+          row.style.opacity = '0';
+          row.style.transform = 'scale(0.98)';
+          setTimeout(() => {
+            row.remove();
+            applyFilter();
+          }, 300);
+        }
+      });
+
+      setTimeout(() => {
+        applyFilter();
+        if (selectMode) setSelectMode(false);
+      }, 350);
+
+      showFlash('success', successMessage || 'Activity log permanently deleted.');
+    }
+
+    // Confirm single activity deletion
+    function confirmDeleteSingleActivity(id, label) {
+      showConfirmModal({
+        title: 'Delete Activity Entry',
+        message: `Permanently delete activity log for <span class="font-bold text-white">${label || '#' + id}</span>? This record will be permanently removed from the system.`,
+        confirmText: 'Yes, Delete',
+        onConfirm: function() {
+          permanentlyDeleteActivities([id], 'Activity log permanently deleted.');
+        }
+      });
+    }
+
+    // Toggle delete button click (Bulk Delete)
     toggleBtn.addEventListener('click', function () {
       if (!selectMode) {
         setSelectMode(true);
@@ -414,22 +608,20 @@
       // In select mode: perform deletion of checked items
       const checkedBoxes = Array.from(document.querySelectorAll('.row-checkbox:checked'));
       if (checkedBoxes.length === 0) {
-        alert('No rows selected. Check the boxes next to activity logs first.');
+        showFlash('error', 'No rows selected. Check the boxes next to activity logs first.');
         return;
       }
 
-      if (!confirm(`Delete ${checkedBoxes.length} selected activity entries? This action cannot be undone.`)) {
-        return;
-      }
+      const selectedIds = checkedBoxes.map(cb => cb.value).filter(Boolean);
 
-      checkedBoxes.forEach(cb => {
-        const row = cb.closest('.log-row');
-        if (row) row.remove();
+      showConfirmModal({
+        title: 'Delete Selected Activities',
+        message: `Permanently delete <span class="font-bold text-white">${selectedIds.length}</span> selected activity entries? This action cannot be undone.`,
+        confirmText: 'Yes, Delete',
+        onConfirm: function() {
+          permanentlyDeleteActivities(selectedIds, `${selectedIds.length} activity entries permanently deleted.`);
+        }
       });
-
-      showFlash('success', 'Selected activity entries deleted.');
-      setSelectMode(false);
-      applyFilter();
     });
 
     // Clear selection
@@ -499,6 +691,22 @@
       setSelectMode(false);
       applyFilter();
     });
+
+    // Initialize activities on load: remove any rows marked as deleted
+    function initActivities() {
+      const deletedIds = getDeletedActivityIds().map(String);
+      if (deletedIds.length > 0) {
+        document.querySelectorAll('.log-row').forEach(row => {
+          const rowId = String(row.getAttribute('data-id'));
+          if (deletedIds.includes(rowId)) {
+            row.remove();
+          }
+        });
+      }
+      applyFilter();
+    }
+
+    initActivities();
   </script>
 </body>
 </html>
