@@ -13,22 +13,6 @@
     @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
     main { padding-top: calc(var(--nav-h) + 1rem); }
   </style>
-  <script>
-    // Immediate anti-flash check for deleted vehicles before rendering
-    (function() {
-      try {
-        var deleted = JSON.parse(localStorage.getItem('kreditcars_deleted_vehicles') || '[]');
-        if (Array.isArray(deleted) && deleted.length > 0) {
-          var style = document.createElement('style');
-          style.id = 'anti-flash-deleted';
-          style.textContent = deleted.map(function(id) {
-            return '.car-card[data-id="' + id + '"] { display: none !important; }';
-          }).join(' ');
-          document.head.appendChild(style);
-        }
-      } catch (e) {}
-    })();
-  </script>
 </head>
 <body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
 
@@ -109,15 +93,21 @@
       <!-- Featured grid -->
       <div id="featured-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
+        <!-- Loading state card -->
+        <div id="loading-state" class="col-span-full py-16 text-center bg-[#0B1320]/50 border border-slate-800 rounded-2xl">
+          <div class="inline-block w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+          <p class="text-sm text-slate-400">Loading vehicles from Firestore collection <code class="text-amber-400 font-mono">cars</code>...</p>
+        </div>
+
         <!-- Empty state card -->
-        <div id="empty-state" class="col-span-full py-16 text-center bg-[#0B1320]/50 border border-slate-800 rounded-2xl">
+        <div id="empty-state" class="hidden col-span-full py-16 text-center bg-[#0B1320]/50 border border-slate-800 rounded-2xl">
           <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-500 border border-slate-700">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
           </div>
           <h3 class="text-lg font-bold text-white italic mb-1">No Vehicles in Inventory</h3>
-          <p class="text-sm text-slate-400 max-w-sm mx-auto mb-6">There are currently no listed vehicles. Click below to add a new vehicle to the catalog.</p>
+          <p class="text-sm text-slate-400 max-w-sm mx-auto mb-6">There are currently no listed vehicles in Firestore. Click below to add your first vehicle to the catalog.</p>
           <div class="flex items-center justify-center gap-3">
             <button onclick="document.getElementById('toggle-add-form').click()" class="inline-flex items-center gap-2 bg-amber-500 text-black px-5 py-2 uppercase font-bold transform -skew-x-6 hover:bg-amber-400 transition text-xs shadow">
               <span class="inline-block skew-x-6">+ Add First Vehicle</span>
@@ -133,50 +123,47 @@
 
         <form id="add-vehicle-form" method="post" enctype="multipart/form-data" class="space-y-4">
           <div class="grid md:grid-cols-2 gap-4">
-            <input name="make" placeholder="Brand Name" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
-            <input name="model" placeholder="Model" required class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
-            <input name="year" placeholder="Year Model" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
-            <input name="mileage" placeholder="Mileage (e.g. 58,000 mi)" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+            <input name="make" placeholder="Brand Name (e.g. Toyota, Ford)" required class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+            <input name="model" placeholder="Model (e.g. Vios 1.5 G, Wildtrak)" required class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+            <input name="year" placeholder="Year Model (e.g. 2024)" required class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+            <input name="mileage" placeholder="Mileage (e.g. 35,000 mi)" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
 
             <!-- CONDITION -->
             <select name="condition" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
-              <option value="">Condition</option>
-              <option>New</option>
-              <option>Second Hand</option>
+              <option value="Second Hand">Second Hand</option>
+              <option value="New">New</option>
             </select>
 
-            <input name="price" placeholder="Selling Price" required class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
-            <input name="downpayment" placeholder="Downpayment" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+            <input name="price" placeholder="Selling Price (e.g. ₱650,000)" required class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+            <input name="downpayment" placeholder="Downpayment (e.g. 65,000)" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
 
             <!-- STOCK 1–50 -->
             <select name="stock" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
-              <option value="">Stock Units</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
+              <option value="1">1 Unit</option>
+              <option value="2">2 Units</option>
+              <option value="3">3 Units</option>
+              <option value="4">4 Units</option>
+              <option value="5">5 Units</option>
+              <option value="10">10 Units</option>
             </select>
 
             <!-- FUEL TYPE -->
             <select name="fuel_type" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
-              <option value="">Fuel Type</option>
-              <option>Gasoline</option>
-              <option>Diesel</option>
+              <option value="Gasoline">Gasoline</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="Electric">Electric</option>
             </select>
 
-            <input name="engine" placeholder="Engine (1.0L / 2.5L etc)" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+            <input name="engine" placeholder="Engine (e.g. 1.5L Dual VVT-i)" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
 
             <!-- TRANSMISSION -->
             <select name="transmission" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
-              <option value="">Transmission</option>
-              <option>Automatic</option>
-              <option>Manual</option>
+              <option value="Automatic">Automatic</option>
+              <option value="Manual">Manual</option>
             </select>
 
-            <input name="location" placeholder="Location" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm md:col-span-2">
+            <input name="location" placeholder="Location (e.g. Olongapo City Showroom)" class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm md:col-span-2">
 
             <!-- DESCRIPTION -->
             <textarea name="description" rows="4" placeholder="Full vehicle description..." class="bg-slate-900 border border-slate-700 p-2.5 rounded-lg md:col-span-2 text-white focus:outline-none focus:border-amber-500 text-sm"></textarea>
@@ -207,7 +194,7 @@
           </div>
 
           <div class="flex items-center gap-3 pt-2">
-            <button type="submit" name="add_car" class="bg-amber-500 hover:bg-amber-400 text-black px-6 py-2 rounded-lg font-bold text-sm transition">
+            <button type="submit" id="btn-submit-car" name="add_car" class="bg-amber-500 hover:bg-amber-400 text-black px-6 py-2 rounded-lg font-bold text-sm transition">
               ADD VEHICLE
             </button>
             <button type="button" id="cancel-add" class="bg-slate-800 hover:bg-slate-700 text-white px-6 py-2 rounded-lg font-bold text-sm transition">
@@ -220,15 +207,123 @@
     </div>
   </main>
 
+  <!-- EDIT VEHICLE MODAL -->
+  <div id="edit-vehicle-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-[#0B1320] border border-slate-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+      <button id="close-edit-modal" type="button" class="absolute top-4 right-4 text-slate-400 hover:text-white text-2xl font-bold leading-none p-1">&times;</button>
+      
+      <div class="mb-5 pb-3 border-b border-slate-800">
+        <h3 class="text-xl font-bold text-white italic">Edit <span class="text-amber-500">Vehicle</span></h3>
+        <p class="text-xs text-slate-400 mt-1">Update vehicle specifications, status, and pricing in Cloud Firestore.</p>
+      </div>
+
+      <form id="edit-vehicle-form" class="space-y-4">
+        <input type="hidden" id="edit-car-id" />
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Brand / Make</label>
+            <input id="edit-brand" placeholder="e.g. Toyota" required class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Model</label>
+            <input id="edit-model" placeholder="e.g. Vios 1.5 G" required class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Year</label>
+            <input id="edit-year" placeholder="e.g. 2024" required class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Mileage</label>
+            <input id="edit-mileage" placeholder="e.g. 15,000 mi" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Condition</label>
+            <select id="edit-condition" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+              <option value="New">New</option>
+              <option value="Second Hand">Second Hand</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Status</label>
+            <select id="edit-status" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+              <option value="available">Available</option>
+              <option value="sold">Sold</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Selling Price</label>
+            <input id="edit-price" placeholder="e.g. ₱750,000" required class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Downpayment</label>
+            <input id="edit-downpayment" placeholder="e.g. 75,000" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Transmission</label>
+            <select id="edit-transmission" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+              <option value="Automatic">Automatic</option>
+              <option value="Manual">Manual</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Fuel Type</label>
+            <select id="edit-fuel" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+              <option value="Gasoline">Gasoline</option>
+              <option value="Diesel">Diesel</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="Electric">Electric</option>
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Location</label>
+            <input id="edit-location" placeholder="e.g. Olongapo City Showroom" class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm">
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Description</label>
+            <textarea id="edit-description" rows="3" placeholder="Full vehicle description..." class="w-full bg-slate-900 border border-slate-700 p-2.5 rounded-lg text-white focus:outline-none focus:border-amber-500 text-sm"></textarea>
+          </div>
+          <div class="md:col-span-2 space-y-2">
+            <div class="flex items-center justify-between">
+              <label class="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
+                <span>Vehicle Photos</span>
+                <span class="text-amber-500 font-normal">(Max 8 photos — add or remove)</span>
+              </label>
+              <span id="edit-photo-count-badge" class="text-xs text-slate-400 font-mono">0 / 8 photos</span>
+            </div>
+
+            <div class="relative">
+              <input type="file" id="edit-photo-input" accept="image/*" multiple
+                     class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-bold file:uppercase file:tracking-wider file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700 file:cursor-pointer cursor-pointer bg-slate-900 border border-slate-700 rounded-lg p-2 focus:outline-none focus:border-amber-500 transition">
+            </div>
+
+            <!-- Photo Previews Grid (Max 8 thumbnails) -->
+            <div id="edit-photos-preview-container" class="hidden grid grid-cols-4 sm:grid-cols-8 gap-2 pt-1"></div>
+
+            <p id="edit-photo-error-msg" class="hidden text-xs text-red-400 font-medium flex items-center gap-1.5 mt-1">
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span>Maximum 8 photos allowed.</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <button type="button" id="btn-cancel-edit" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-5 py-2 rounded-lg font-semibold text-xs transition">
+            Cancel
+          </button>
+          <button type="submit" id="btn-save-edit" class="bg-amber-500 hover:bg-amber-400 text-black px-6 py-2 rounded-lg font-bold text-xs uppercase tracking-wider transition shadow">
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <!-- CONFIRMATION POP-OUT MODAL -->
   <div id="confirm-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-[#0B1320] border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl relative transform transition-all animate-in fade-in zoom-in-95 duration-200">
-      
-      <!-- Close 'X' button -->
       <button id="modal-close-x" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl font-bold leading-none p-1">&times;</button>
 
       <div class="flex items-start gap-4">
-        <!-- Icon container -->
         <div id="modal-icon-container" class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-500/10 border border-red-500/30 text-red-500">
           <svg id="modal-icon-danger" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -246,7 +341,6 @@
         </div>
       </div>
 
-      <!-- Action buttons -->
       <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-800">
         <button id="modal-cancel-btn" type="button" class="px-5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold uppercase tracking-wider transition border border-slate-700">
           Cancel
@@ -305,19 +399,37 @@
     </div>
   </footer>
 
-  <script>
-    // mobile menu toggle
+  <!-- MODULE SCRIPT: Connected to Firebase Firestore -->
+  <script type="module">
+    import {
+      db,
+      collection,
+      doc,
+      addDoc,
+      getDocs,
+      updateDoc,
+      deleteDoc,
+      query,
+      orderBy,
+      serverTimestamp
+    } from './firebase.js';
+
+    // State
+    let firestoreCars = [];
+    let pendingConfirmAction = null;
+    let editCarCurrentPhoto = '';
+    let editCarNewPhoto = '';
+
+    // Mobile nav toggle
     const mobileBtn = document.getElementById('mobile-btn');
-    if (mobileBtn) {
-      mobileBtn.addEventListener('click', function(){
-        const menu = document.getElementById('mobile-menu');
-        const expanded = this.getAttribute('aria-expanded') === 'true';
-        this.setAttribute('aria-expanded', (!expanded).toString());
-        if (menu) menu.classList.toggle('hidden');
+    const mobileMenu = document.getElementById('mobile-menu');
+    if (mobileBtn && mobileMenu) {
+      mobileBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
       });
     }
 
-    // toggle add form
+    // Toggle Add Vehicle form
     const toggleBtn = document.getElementById('toggle-add-form');
     const addForm = document.getElementById('add-form');
     const cancelBtn = document.getElementById('cancel-add');
@@ -363,8 +475,6 @@
     }
 
     // Custom Pop-Out Confirmation Modal
-    let pendingConfirmAction = null;
-
     function showConfirmModal(opts) {
       const modal = document.getElementById('confirm-modal');
       const title = document.getElementById('modal-title');
@@ -383,13 +493,13 @@
       if (opts.isDanger) {
         confirmBtn.className = "px-6 py-2.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-bold uppercase tracking-wider transition shadow-lg";
         iconBox.className = "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-red-500/10 border border-red-500/30 text-red-500";
-        iconDanger.classList.remove('hidden');
-        iconSuccess.classList.add('hidden');
+        iconDanger?.classList.remove('hidden');
+        iconSuccess?.classList.add('hidden');
       } else {
         confirmBtn.className = "px-6 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold uppercase tracking-wider transition shadow-lg";
         iconBox.className = "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 bg-amber-500/10 border border-amber-500/30 text-amber-400";
-        iconDanger.classList.add('hidden');
-        iconSuccess.classList.remove('hidden');
+        iconDanger?.classList.add('hidden');
+        iconSuccess?.classList.remove('hidden');
       }
 
       pendingConfirmAction = opts.onConfirm;
@@ -402,101 +512,50 @@
       pendingConfirmAction = null;
     }
 
-    const modalCancelBtn = document.getElementById('modal-cancel-btn');
-    const modalCloseX = document.getElementById('modal-close-x');
-    const modalConfirmBtn = document.getElementById('modal-confirm-btn');
-    const confirmModal = document.getElementById('confirm-modal');
-
-    if (modalCancelBtn) modalCancelBtn.addEventListener('click', hideConfirmModal);
-    if (modalCloseX) modalCloseX.addEventListener('click', hideConfirmModal);
-    if (confirmModal) {
-      confirmModal.addEventListener('click', function(e) {
-        if (e.target === confirmModal) hideConfirmModal();
-      });
-    }
-    if (modalConfirmBtn) {
-      modalConfirmBtn.addEventListener('click', function() {
-        if (typeof pendingConfirmAction === 'function') {
-          pendingConfirmAction();
-        }
-        hideConfirmModal();
-      });
-    }
-
-    // Storage keys for persistent inventory
-    const STORAGE_KEY_DELETED = 'kreditcars_deleted_vehicles';
-    const STORAGE_KEY_CUSTOM = 'kreditcars_custom_vehicles';
-
-    function getDeletedCarIds() {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY_DELETED);
-        return data ? JSON.parse(data) : [];
-      } catch (err) {
-        return [];
+    document.getElementById('modal-cancel-btn')?.addEventListener('click', hideConfirmModal);
+    document.getElementById('modal-close-x')?.addEventListener('click', hideConfirmModal);
+    document.getElementById('confirm-modal')?.addEventListener('click', function(e) {
+      if (e.target === this) hideConfirmModal();
+    });
+    document.getElementById('modal-confirm-btn')?.addEventListener('click', function() {
+      if (typeof pendingConfirmAction === 'function') {
+        pendingConfirmAction();
       }
-    }
+      hideConfirmModal();
+    });
 
-    function saveDeletedCarId(id) {
-      try {
-        const deleted = getDeletedCarIds();
-        const strId = String(id);
-        if (!deleted.includes(strId)) {
-          deleted.push(strId);
-          localStorage.setItem(STORAGE_KEY_DELETED, JSON.stringify(deleted));
-        }
-      } catch (err) {
-        console.error('Error saving deleted car:', err);
-      }
-    }
-
-    function getCustomCars() {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY_CUSTOM);
-        return data ? JSON.parse(data) : [];
-      } catch (err) {
-        return [];
-      }
-    }
-
-    function saveCustomCar(car) {
-      try {
-        const custom = getCustomCars();
-        custom.push(car);
-        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
-      } catch (err) {
-        console.error('Error saving custom car:', err);
-      }
-    }
-
-    function removeCustomCar(id) {
-      try {
-        const custom = getCustomCars().filter(c => String(c.id) !== String(id));
-        localStorage.setItem(STORAGE_KEY_CUSTOM, JSON.stringify(custom));
-      } catch (err) {
-        console.error('Error removing custom car:', err);
-      }
-    }
-
+    // Create Car Card Element with Details, Edit, Mark Sold, and Delete buttons
     function createCarCardElement(car) {
       const card = document.createElement('div');
       card.className = "car-card group bg-[#0B1320] border border-slate-800 rounded-xl overflow-hidden flex flex-col hover:border-amber-500/50 transition duration-200";
       card.setAttribute('data-id', car.id);
-      card.setAttribute('data-name', car.name);
 
+      const carTitle = car.name || `${car.brand || car.make || ''} ${car.model || ''}`.trim() || 'Vehicle';
+      card.setAttribute('data-name', carTitle);
+
+      const isSold = (car.status || '').toLowerCase() === 'sold';
       const isNew = (car.condition || '').toLowerCase() === 'new';
       const badgeBorder = isNew ? 'border-emerald-500' : 'border-amber-500';
 
-      const photoSrc = car.photo || (car.photos && car.photos.length > 0 ? car.photos[0] : null);
-      const photoCount = (car.photos && car.photos.length > 0) ? car.photos.length : (car.photo ? 1 : 0);
+      const photoSrc = (car.imageUrls && car.imageUrls.length > 0 ? car.imageUrls[0] : null) || car.imageUrl || car.photo || (car.photos && car.photos.length > 0 ? car.photos[0] : null);
+      const photoCount = (car.imageUrls && car.imageUrls.length > 0) ? car.imageUrls.length : ((car.photos && car.photos.length > 0) ? car.photos.length : (photoSrc ? 1 : 0));
 
       const mediaHtml = photoSrc
-        ? `<img src="${photoSrc}" alt="${car.name}" class="w-full h-full object-cover">`
+        ? `<img src="${photoSrc}" alt="${carTitle}" class="w-full h-full object-cover ${isSold ? 'opacity-60 grayscale-[30%]' : ''}">`
         : `<div class="absolute inset-0 bg-gradient-to-t from-[#0B1320] to-slate-900/50 flex items-center justify-center">
             <svg class="w-16 h-16 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
             </svg>
           </div>`;
+
+      // Status Tag: Available vs Sold
+      const statusBadgeHtml = isSold
+        ? `<div class="absolute top-3 right-3 bg-red-600/90 border border-red-500 text-white text-[11px] font-bold px-2.5 py-1 uppercase rounded tracking-wider shadow">SOLD</div>`
+        : `<div class="absolute top-3 right-3 bg-slate-900/90 border border-slate-700 text-green-400 text-[11px] font-semibold px-2.5 py-1 uppercase rounded flex items-center gap-1.5 shadow">
+             <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+             Available
+           </div>`;
 
       const photosBadgeHtml = photoCount > 1
         ? `<div class="absolute bottom-2 right-2 bg-black/85 text-amber-400 text-[10px] font-bold px-2 py-0.5 rounded border border-slate-700 flex items-center gap-1 shadow">
@@ -511,27 +570,41 @@
           <div class="absolute top-3 left-3 bg-black/80 text-white text-[11px] font-semibold px-2.5 py-1 uppercase rounded border-l-2 ${badgeBorder}">
             ${car.condition || 'Second Hand'}
           </div>
+          ${statusBadgeHtml}
           ${photosBadgeHtml}
         </div>
 
         <div class="p-5 flex-1 flex flex-col">
-          <h3 class="text-lg font-bold text-white italic mb-1 group-hover:text-amber-500 transition">
-            ${car.name}
-          </h3>
-          <div class="flex gap-4 text-xs text-slate-400 font-mono mb-6 uppercase">
+          <div class="flex items-start justify-between gap-2 mb-1">
+            <h3 class="text-lg font-bold text-white italic group-hover:text-amber-500 transition line-clamp-1">
+              ${carTitle}
+            </h3>
+          </div>
+
+          <div class="flex gap-3 text-xs text-slate-400 font-mono mb-4 uppercase">
             <span>${car.mileage || '0 mi'}</span>
             <span>•</span>
             <span>${car.year || '2024'}</span>
+            <span>•</span>
+            <span class="${isSold ? 'text-red-400 font-bold' : 'text-emerald-400'}">${isSold ? 'SOLD' : 'AVAILABLE'}</span>
           </div>
 
-          <div class="mt-auto flex items-center justify-between pt-4 border-t border-slate-800 gap-2">
-            <span class="text-xl font-bold text-cyan-400">${car.price}</span>
+          ${car.description ? `<p class="text-xs text-slate-400 line-clamp-2 mb-4 leading-relaxed">${car.description}</p>` : ''}
 
-            <div class="flex gap-2">
-              <a href="detail.html?id=${car.id}" class="bg-slate-800 hover:bg-amber-500 hover:text-black text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+          <div class="mt-auto flex flex-wrap items-center justify-between pt-4 border-t border-slate-800 gap-2">
+            <span class="text-xl font-bold text-cyan-400">${car.price || '₱0'}</span>
+
+            <div class="flex flex-wrap items-center gap-1.5">
+              <a href="detail.html?id=${encodeURIComponent(car.id)}" class="bg-slate-800 hover:bg-amber-500 hover:text-black text-white text-xs font-semibold px-2.5 py-1.5 rounded transition">
                 Details
               </a>
-              <button type="button" class="btn-delete-card bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
+              <button type="button" class="btn-edit-card bg-amber-500/15 hover:bg-amber-500 text-amber-400 hover:text-black border border-amber-500/30 text-xs font-semibold px-2.5 py-1.5 rounded transition" title="Edit vehicle in Firestore">
+                Edit
+              </button>
+              <button type="button" class="btn-sold-card ${isSold ? 'bg-emerald-600/80 hover:bg-emerald-500' : 'bg-purple-600/80 hover:bg-purple-500'} text-white text-xs font-semibold px-2.5 py-1.5 rounded transition" title="${isSold ? 'Mark as Available' : 'Mark as Sold'}">
+                ${isSold ? 'Mark Available' : 'Mark Sold'}
+              </button>
+              <button type="button" class="btn-delete-card bg-red-600/80 hover:bg-red-600 text-white text-xs font-semibold px-2.5 py-1.5 rounded transition" title="Delete from Firestore">
                 Delete
               </button>
             </div>
@@ -539,29 +612,88 @@
         </div>
       `;
 
+      // 1. Edit Button listener
+      const editBtn = card.querySelector('.btn-edit-card');
+      if (editBtn) {
+        editBtn.addEventListener('click', () => openEditModal(car));
+      }
+
+      // 2. Mark Sold / Mark Available listener
+      const soldBtn = card.querySelector('.btn-sold-card');
+      if (soldBtn) {
+        soldBtn.addEventListener('click', async () => {
+          const newStatus = isSold ? 'available' : 'sold';
+          try {
+            soldBtn.disabled = true;
+            await updateDoc(doc(db, "cars", car.id), { status: newStatus });
+            car.status = newStatus;
+            showFlash('success', `Vehicle "${carTitle}" was marked as ${newStatus.toUpperCase()} in Firestore.`);
+            loadCarsFromFirestore();
+          } catch (err) {
+            console.error('Error updating car status:', err);
+            showFlash('danger', 'Failed to update status: ' + err.message);
+          } finally {
+            soldBtn.disabled = false;
+          }
+        });
+      }
+
+      // 3. Delete Button listener
       const deleteBtn = card.querySelector('.btn-delete-card');
       if (deleteBtn) {
-        deleteBtn.addEventListener('click', function() {
-          confirmDeleteCar(car.id, car.name);
+        deleteBtn.addEventListener('click', () => {
+          showConfirmModal({
+            title: 'Delete Vehicle',
+            message: `Are you sure you want to delete <span class="font-bold text-white">${carTitle}</span> from Firestore? This action permanently removes the record.`,
+            confirmText: 'Yes, Delete',
+            isDanger: true,
+            onConfirm: async () => {
+              try {
+                await deleteDoc(doc(db, "cars", car.id));
+                card.style.transition = 'all 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                  card.remove();
+                  updateVehicleCount();
+                }, 300);
+                showFlash('success', `Vehicle "${carTitle}" was permanently deleted from Firestore.`);
+              } catch (err) {
+                console.error('Error deleting vehicle from Firestore:', err);
+                showFlash('danger', 'Failed to delete vehicle: ' + err.message);
+              }
+            }
+          });
         });
       }
 
       return card;
     }
 
-    // Update active vehicles count
+    // Update vehicle counts and empty state
     function updateVehicleCount() {
       const cards = document.querySelectorAll('.car-card');
-      const count = cards.length;
+      const totalCount = cards.length;
       const countBadge = document.getElementById('vehicle-count-badge');
       const emptyState = document.getElementById('empty-state');
 
+      let availableCount = 0;
+      cards.forEach(card => {
+        const id = card.getAttribute('data-id');
+        const c = firestoreCars.find(item => item.id === id);
+        if (c && (c.status || '').toLowerCase() !== 'sold') {
+          availableCount++;
+        } else if (!c) {
+          availableCount++;
+        }
+      });
+
       if (countBadge) {
-        countBadge.textContent = `${count} Available`;
+        countBadge.textContent = `${availableCount} Available`;
       }
 
       if (emptyState) {
-        if (count === 0) {
+        if (totalCount === 0) {
           emptyState.classList.remove('hidden');
         } else {
           emptyState.classList.add('hidden');
@@ -569,69 +701,354 @@
       }
     }
 
-    // Confirm Delete Vehicle
-    function confirmDeleteCar(id, name) {
-      const card = document.querySelector(`.car-card[data-id="${id}"]`);
-      showConfirmModal({
-        title: 'Delete Vehicle',
-        message: `Are you sure you want to delete <span class="font-bold text-white">${name}</span> from inventory? This action cannot be undone.`,
-        confirmText: 'Yes, Delete',
-        isDanger: true,
-        onConfirm: function() {
-          // 1. Permanently record deletion in localStorage so it stays deleted across refreshes/page visits
-          saveDeletedCarId(id);
-          removeCustomCar(id);
-
-          // 2. Animate and remove element from DOM
-          if (card) {
-            card.style.transition = 'all 0.3s ease';
-            card.style.opacity = '0';
-            card.style.transform = 'scale(0.95)';
-            setTimeout(() => {
-              card.remove();
-              updateVehicleCount();
-            }, 300);
-          } else {
-            updateVehicleCount();
-          }
-
-          showFlash('success', `Vehicle "${name}" was permanently removed from inventory.`);
-        }
-      });
-    }
-
-    // Initialize Inventory on load: exclude deleted vehicles and inject any custom vehicles
-    function initInventory() {
-      const deletedIds = getDeletedCarIds().map(String);
-
-      // Remove any hardcoded cards that were marked as deleted
-      document.querySelectorAll('.car-card').forEach(card => {
-        const cardId = String(card.getAttribute('data-id'));
-        if (deletedIds.includes(cardId)) {
-          card.remove();
-        }
-      });
-
-      // Add custom vehicles that are not deleted
-      const customCars = getCustomCars();
-      const grid = document.getElementById('featured-grid');
+    // Load cars from Firestore collection "cars"
+    async function loadCarsFromFirestore() {
+      const loadingState = document.getElementById('loading-state');
       const emptyState = document.getElementById('empty-state');
+      const grid = document.getElementById('featured-grid');
 
-      customCars.forEach(car => {
-        if (!deletedIds.includes(String(car.id))) {
+      try {
+        const carsCol = collection(db, "cars");
+        let snapshot;
+
+        try {
+          const q = query(carsCol, orderBy("createdAt", "desc"));
+          snapshot = await getDocs(q);
+        } catch (orderErr) {
+          // Fallback if index or createdAt ordering fails
+          snapshot = await getDocs(carsCol);
+        }
+
+        if (loadingState) loadingState.remove();
+
+        // Clear existing car cards
+        document.querySelectorAll('.car-card').forEach(c => c.remove());
+
+        const list = [];
+        snapshot.forEach(docSnap => {
+          list.push({ id: docSnap.id, ...docSnap.data() });
+        });
+
+        // In-memory sort fallback
+        list.sort((a, b) => {
+          const timeA = a.createdAt?.seconds ? a.createdAt.seconds * 1000 : (new Date(a.createdAt || 0).getTime() || 0);
+          const timeB = b.createdAt?.seconds ? b.createdAt.seconds * 1000 : (new Date(b.createdAt || 0).getTime() || 0);
+          return timeB - timeA;
+        });
+
+        firestoreCars = list;
+
+        if (list.length === 0) {
+          if (emptyState) emptyState.classList.remove('hidden');
+          updateVehicleCount();
+          return;
+        }
+
+        if (emptyState) emptyState.classList.add('hidden');
+
+        list.forEach(car => {
           const cardEl = createCarCardElement(car);
           if (grid && emptyState) {
             grid.insertBefore(cardEl, emptyState);
           } else if (grid) {
             grid.appendChild(cardEl);
           }
+        });
+
+        updateVehicleCount();
+      } catch (err) {
+        console.error("Error loading cars from Firestore:", err);
+        if (loadingState) loadingState.remove();
+        showFlash('danger', 'Error loading from Firestore: ' + (err.message || err) + '. Please check Firebase Console Firestore Rules.');
+      }
+    }
+
+    // Cloudinary Unsigned Upload Helper
+    // Cloud Name: qkwrruyx, Upload Preset: kreditcars
+    async function uploadToCloudinary(file) {
+      const url = 'https://api.cloudinary.com/v1_1/qkwrruyx/image/upload';
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('upload_preset', 'kreditcars');
+
+      const res = await fetch(url, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!res.ok) {
+        let msg = `HTTP ${res.status}`;
+        try {
+          const data = await res.json();
+          if (data.error && data.error.message) {
+            msg = data.error.message;
+          }
+        } catch (_) {}
+        throw new Error(msg);
+      }
+
+      const data = await res.json();
+      const returnUrl = data.secure_url || data.url;
+      if (!returnUrl) {
+        throw new Error('No image URL returned from Cloudinary');
+      }
+      return returnUrl;
+    }
+
+    // Edit Vehicle Modal Functions
+    const editModal = document.getElementById('edit-vehicle-modal');
+    const closeEditBtn = document.getElementById('close-edit-modal');
+    const cancelEditBtn = document.getElementById('btn-cancel-edit');
+    const editForm = document.getElementById('edit-vehicle-form');
+    const editPhotoInput = document.getElementById('edit-photo-input');
+    const editPhotoCountBadge = document.getElementById('edit-photo-count-badge');
+    const editPhotoPreviewContainer = document.getElementById('edit-photos-preview-container');
+    const editPhotoErrorMsg = document.getElementById('edit-photo-error-msg');
+
+    // Array of { type: 'existing'|'new', url?: string, file?: File, previewUrl: string }
+    let editVehiclePhotos = [];
+
+    function updateEditPhotoPreviews() {
+      if (!editPhotoPreviewContainer) return;
+      editPhotoPreviewContainer.innerHTML = '';
+
+      if (editPhotoCountBadge) {
+        editPhotoCountBadge.textContent = `${editVehiclePhotos.length} / 8 photos`;
+      }
+
+      if (editVehiclePhotos.length === 0) {
+        editPhotoPreviewContainer.classList.add('hidden');
+        return;
+      }
+
+      editPhotoPreviewContainer.classList.remove('hidden');
+
+      editVehiclePhotos.forEach((item, idx) => {
+        const thumb = document.createElement('div');
+        thumb.className = 'relative group aspect-square rounded-lg overflow-hidden border border-slate-700 bg-slate-900 shadow';
+        thumb.innerHTML = `
+          <img src="${item.previewUrl}" class="w-full h-full object-cover" alt="Photo ${idx + 1}">
+          <button type="button" class="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold opacity-0 group-hover:opacity-100 transition shadow" title="Remove photo">
+            &times;
+          </button>
+          <span class="absolute bottom-1 left-1 bg-black/80 text-white text-[9px] font-mono px-1 rounded">#${idx + 1}</span>
+          ${item.type === 'new' ? '<span class="absolute top-1 left-1 bg-amber-500 text-black text-[8px] font-bold px-1 rounded uppercase">NEW</span>' : ''}
+        `;
+
+        thumb.querySelector('button').addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (item.type === 'new' && item.previewUrl && item.previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(item.previewUrl);
+          }
+          editVehiclePhotos.splice(idx, 1);
+          updateEditPhotoPreviews();
+        });
+
+        editPhotoPreviewContainer.appendChild(thumb);
+      });
+    }
+
+    function openEditModal(car) {
+      if (!editModal) return;
+
+      document.getElementById('edit-car-id').value = car.id;
+      document.getElementById('edit-brand').value = car.brand || car.make || '';
+      document.getElementById('edit-model').value = car.model || '';
+      document.getElementById('edit-year').value = car.year || '';
+      document.getElementById('edit-mileage').value = car.mileage || '';
+      document.getElementById('edit-condition').value = car.condition || 'Second Hand';
+      document.getElementById('edit-status').value = car.status || 'available';
+      document.getElementById('edit-price').value = car.price || '';
+      document.getElementById('edit-downpayment').value = car.downpayment || '';
+      document.getElementById('edit-transmission').value = car.transmission || 'Automatic';
+      document.getElementById('edit-fuel').value = car.fuel_type || 'Gasoline';
+      document.getElementById('edit-location').value = car.location || 'Olongapo City Showroom';
+      document.getElementById('edit-description').value = car.description || '';
+
+      // Clean up previous blob URLs
+      editVehiclePhotos.forEach(p => {
+        if (p.type === 'new' && p.previewUrl && p.previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(p.previewUrl);
         }
       });
 
-      updateVehicleCount();
+      // Populate existing photos from imageUrls, photos, imageUrl, or photo
+      let existing = [];
+      if (Array.isArray(car.imageUrls) && car.imageUrls.length > 0) {
+        existing = car.imageUrls.filter(u => typeof u === 'string' && u.trim() !== '');
+      } else if (Array.isArray(car.photos) && car.photos.length > 0) {
+        existing = car.photos.filter(u => typeof u === 'string' && u.trim() !== '');
+      } else if (car.imageUrl) {
+        existing = [car.imageUrl];
+      } else if (car.photo) {
+        existing = [car.photo];
+      }
+
+      editVehiclePhotos = existing.map(url => ({
+        type: 'existing',
+        url: url,
+        previewUrl: url
+      }));
+
+      if (editPhotoInput) editPhotoInput.value = '';
+      if (editPhotoErrorMsg) editPhotoErrorMsg.classList.add('hidden');
+      updateEditPhotoPreviews();
+
+      editModal.classList.remove('hidden');
     }
 
-    // Multi-photo management (up to 8 photos)
+    function closeEditModalFunc() {
+      if (editModal) editModal.classList.add('hidden');
+    }
+
+    closeEditBtn?.addEventListener('click', closeEditModalFunc);
+    cancelEditBtn?.addEventListener('click', closeEditModalFunc);
+    editModal?.addEventListener('click', (e) => {
+      if (e.target === editModal) closeEditModalFunc();
+    });
+
+    if (editPhotoInput) {
+      editPhotoInput.addEventListener('change', function() {
+        const files = Array.from(this.files || []);
+        if (files.length === 0) return;
+
+        const remainingSlots = 8 - editVehiclePhotos.length;
+        if (remainingSlots <= 0) {
+          if (editPhotoErrorMsg) {
+            editPhotoErrorMsg.querySelector('span').textContent = 'Maximum 8 photos reached. Remove photos before adding more.';
+            editPhotoErrorMsg.classList.remove('hidden');
+          }
+          showFlash('danger', 'Maximum 8 photos allowed. Please remove existing photos to add new ones.');
+          this.value = '';
+          return;
+        }
+
+        if (files.length > remainingSlots) {
+          if (editPhotoErrorMsg) {
+            editPhotoErrorMsg.querySelector('span').textContent = `Maximum 8 photos allowed. Only ${remainingSlots} photo(s) were added.`;
+            editPhotoErrorMsg.classList.remove('hidden');
+          }
+          showFlash('danger', `You can only add ${remainingSlots} more photo(s). Maximum 8 photos allowed.`);
+        } else {
+          if (editPhotoErrorMsg) editPhotoErrorMsg.classList.add('hidden');
+        }
+
+        const allowedFiles = files.slice(0, remainingSlots);
+        allowedFiles.forEach(file => {
+          editVehiclePhotos.push({
+            type: 'new',
+            file: file,
+            previewUrl: URL.createObjectURL(file)
+          });
+        });
+
+        updateEditPhotoPreviews();
+        this.value = '';
+      });
+    }
+
+    if (editForm) {
+      editForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const carId = document.getElementById('edit-car-id').value;
+        const saveBtn = document.getElementById('btn-save-edit');
+
+        if (!carId) return;
+
+        if (saveBtn) {
+          saveBtn.disabled = true;
+          saveBtn.textContent = 'Saving...';
+        }
+
+        const brand = document.getElementById('edit-brand').value.trim();
+        const model = document.getElementById('edit-model').value.trim();
+        const year = document.getElementById('edit-year').value.trim();
+        const mileage = document.getElementById('edit-mileage').value.trim();
+        const condition = document.getElementById('edit-condition').value;
+        const status = document.getElementById('edit-status').value;
+        const price = document.getElementById('edit-price').value.trim();
+        const downpayment = document.getElementById('edit-downpayment').value.trim();
+        const transmission = document.getElementById('edit-transmission').value;
+        const fuel_type = document.getElementById('edit-fuel').value;
+        const location = document.getElementById('edit-location').value.trim();
+        const description = document.getElementById('edit-description').value.trim();
+
+        const fullName = `${brand} ${model}`.trim();
+
+        // Process photos: keep existing URLs, upload new files to Cloudinary
+        const finalUrls = [];
+        const newItemsToUpload = editVehiclePhotos.filter(p => p.type === 'new' && p.file);
+        let uploadIdx = 0;
+
+        for (let i = 0; i < editVehiclePhotos.length; i++) {
+          const item = editVehiclePhotos[i];
+          if (item.type === 'existing' && item.url) {
+            finalUrls.push(item.url);
+          } else if (item.type === 'new' && item.file) {
+            uploadIdx++;
+            if (saveBtn) {
+              saveBtn.textContent = `Uploading photo ${uploadIdx}/${newItemsToUpload.length}...`;
+            }
+            try {
+              const url = await uploadToCloudinary(item.file);
+              finalUrls.push(url);
+            } catch (err) {
+              console.error("Cloudinary upload error during edit:", err);
+              showFlash('danger', `Failed to upload photo to Cloudinary: ${err.message || err}. Changes were not saved.`);
+              if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.textContent = 'Save Changes';
+              }
+              return;
+            }
+          }
+        }
+
+        if (saveBtn) {
+          saveBtn.textContent = 'Saving to Firestore...';
+        }
+
+        const primaryPhoto = finalUrls.length > 0 ? finalUrls[0] : '';
+
+        const updatedData = {
+          brand: brand,
+          make: brand,
+          model: model,
+          name: fullName,
+          year: String(year),
+          price: price,
+          description: description,
+          imageUrl: primaryPhoto,
+          imageUrls: finalUrls,
+          photo: primaryPhoto,
+          photos: finalUrls,
+          condition: condition,
+          status: status,
+          mileage: mileage,
+          downpayment: downpayment,
+          transmission: transmission,
+          fuel_type: fuel_type,
+          location: location
+        };
+
+        try {
+          await updateDoc(doc(db, "cars", carId), updatedData);
+          closeEditModalFunc();
+          showFlash('success', `Vehicle "${fullName}" updated in Firestore successfully.`);
+          loadCarsFromFirestore();
+        } catch (err) {
+          console.error("Error updating vehicle in Firestore:", err);
+          showFlash('danger', 'Failed to update vehicle: ' + err.message);
+        } finally {
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save Changes';
+          }
+        }
+      });
+    }
+
+    // Photo Handling for Add Vehicle Form
     let selectedVehiclePhotos = [];
     const photoInput = document.getElementById('vehicle-photos-input');
     const photoCountBadge = document.getElementById('photo-count-badge');
@@ -639,6 +1056,11 @@
     const photoErrorMsg = document.getElementById('photo-error-msg');
 
     function resetPhotoSelection() {
+      selectedVehiclePhotos.forEach(p => {
+        if (p.previewUrl && p.previewUrl.startsWith('blob:')) {
+          URL.revokeObjectURL(p.previewUrl);
+        }
+      });
       selectedVehiclePhotos = [];
       if (photoInput) photoInput.value = '';
       if (photoCountBadge) photoCountBadge.textContent = '0 / 8 selected';
@@ -653,23 +1075,22 @@
       if (!previewContainer) return;
       previewContainer.innerHTML = '';
 
-      const validPhotos = selectedVehiclePhotos.filter(Boolean);
       if (photoCountBadge) {
-        photoCountBadge.textContent = `${validPhotos.length} / 8 selected`;
+        photoCountBadge.textContent = `${selectedVehiclePhotos.length} / 8 selected`;
       }
 
-      if (validPhotos.length === 0) {
+      if (selectedVehiclePhotos.length === 0) {
         previewContainer.classList.add('hidden');
         return;
       }
 
       previewContainer.classList.remove('hidden');
 
-      validPhotos.forEach((src, idx) => {
+      selectedVehiclePhotos.forEach((item, idx) => {
         const thumb = document.createElement('div');
         thumb.className = 'relative group aspect-square rounded-lg overflow-hidden border border-slate-700 bg-slate-900 shadow';
         thumb.innerHTML = `
-          <img src="${src}" class="w-full h-full object-cover" alt="Photo ${idx + 1}">
+          <img src="${item.previewUrl}" class="w-full h-full object-cover" alt="Photo ${idx + 1}">
           <button type="button" class="absolute top-1 right-1 bg-red-600 hover:bg-red-500 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold opacity-0 group-hover:opacity-100 transition shadow" title="Remove photo">
             &times;
           </button>
@@ -678,6 +1099,9 @@
 
         thumb.querySelector('button').addEventListener('click', (e) => {
           e.stopPropagation();
+          if (item.previewUrl && item.previewUrl.startsWith('blob:')) {
+            URL.revokeObjectURL(item.previewUrl);
+          }
           selectedVehiclePhotos.splice(idx, 1);
           updatePhotoPreviews();
         });
@@ -691,36 +1115,52 @@
         const files = Array.from(this.files || []);
         if (files.length === 0) return;
 
-        if (files.length > 8) {
-          if (photoErrorMsg) photoErrorMsg.classList.remove('hidden');
-          showFlash('danger', 'You can select up to 8 photos. Only the first 8 photos were kept.');
+        const remainingSlots = 8 - selectedVehiclePhotos.length;
+        if (remainingSlots <= 0) {
+          if (photoErrorMsg) {
+            photoErrorMsg.querySelector('span').textContent = 'Maximum 8 photos reached.';
+            photoErrorMsg.classList.remove('hidden');
+          }
+          showFlash('danger', 'Maximum 8 photos allowed.');
+          this.value = '';
+          return;
+        }
+
+        if (files.length > remainingSlots) {
+          if (photoErrorMsg) {
+            photoErrorMsg.querySelector('span').textContent = `Maximum 8 photos allowed. Only ${remainingSlots} more were kept.`;
+            photoErrorMsg.classList.remove('hidden');
+          }
+          showFlash('danger', `You can select up to 8 photos. Only ${remainingSlots} more were added.`);
         } else {
           if (photoErrorMsg) photoErrorMsg.classList.add('hidden');
         }
 
-        const allowedFiles = files.slice(0, 8);
-        selectedVehiclePhotos = [];
-        let loaded = 0;
-
-        allowedFiles.forEach((file, index) => {
-          const reader = new FileReader();
-          reader.onload = function(evt) {
-            selectedVehiclePhotos[index] = evt.target.result;
-            loaded++;
-            if (loaded === allowedFiles.length) {
-              updatePhotoPreviews();
-            }
-          };
-          reader.readAsDataURL(file);
+        const allowedFiles = files.slice(0, remainingSlots);
+        allowedFiles.forEach(file => {
+          selectedVehiclePhotos.push({
+            file: file,
+            previewUrl: URL.createObjectURL(file)
+          });
         });
+
+        updatePhotoPreviews();
+        this.value = '';
       });
     }
 
-    // Add Vehicle form submission handling
+    // Add Vehicle Form Submission: Uploads photos to Cloudinary & saves URLs to Firestore "cars"
     const addVehicleForm = document.getElementById('add-vehicle-form');
     if (addVehicleForm) {
-      addVehicleForm.addEventListener('submit', function(e) {
+      addVehicleForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        const submitBtn = document.getElementById('btn-submit-car');
+        if (submitBtn) {
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'PREPARING...';
+        }
+
         const make = (addVehicleForm.elements['make'] ? addVehicleForm.elements['make'].value : '').trim();
         const model = (addVehicleForm.elements['model'] ? addVehicleForm.elements['model'].value : '').trim();
         const year = (addVehicleForm.elements['year'] ? addVehicleForm.elements['year'].value : '').trim() || new Date().getFullYear();
@@ -736,7 +1176,6 @@
         const descriptionVal = (addVehicleForm.elements['description'] ? addVehicleForm.elements['description'].value : '').trim();
 
         const fullName = `${make} ${model}`.trim() || 'New Vehicle';
-        const newId = 'car_' + Date.now();
 
         let displayPrice = priceVal;
         const cleanPriceNum = Number(priceVal.replace(/[^0-9.]/g, '')) || 0;
@@ -762,19 +1201,49 @@
           mileageFormatted = '0 mi';
         }
 
-        const validPhotos = selectedVehiclePhotos.filter(Boolean);
+        // Upload photos to Cloudinary (up to 8)
+        const uploadedUrls = [];
+        for (let i = 0; i < selectedVehiclePhotos.length; i++) {
+          if (submitBtn) {
+            submitBtn.textContent = `UPLOADING PHOTO ${i + 1} OF ${selectedVehiclePhotos.length}...`;
+          }
+          try {
+            const secureUrl = await uploadToCloudinary(selectedVehiclePhotos[i].file);
+            uploadedUrls.push(secureUrl);
+          } catch (uploadErr) {
+            console.error("Cloudinary upload failed for photo:", uploadErr);
+            showFlash('danger', `Photo upload failed: ${uploadErr.message || uploadErr}. Vehicle was not saved.`);
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'ADD VEHICLE';
+            }
+            return;
+          }
+        }
 
+        if (submitBtn) {
+          submitBtn.textContent = 'SAVING TO FIRESTORE...';
+        }
+
+        const primaryImageUrl = uploadedUrls.length > 0 ? uploadedUrls[0] : '';
         const defaultDesc = `Pristine condition ${fullName}. Well-maintained, verified documents, complete service records from authorized dealership, cold air-conditioning, and 160-point mechanical inspection passed. Available for viewing and test drive at our ${locationVal}.`;
 
-        const newCar = {
-          id: newId,
-          name: fullName,
+        const newCarDoc = {
+          brand: make || fullName,
           make: make || fullName,
           model: model || fullName,
+          name: fullName,
           year: String(year),
+          price: displayPrice,
+          description: descriptionVal || defaultDesc,
+          imageUrl: primaryImageUrl,
+          imageUrls: uploadedUrls,
+          photo: primaryImageUrl,
+          photos: uploadedUrls,
+          status: 'available',
+          createdAt: serverTimestamp(),
           condition: condition,
           mileage: mileageFormatted,
-          price: displayPrice,
           rawPrice: cleanPriceNum,
           downpayment: cleanDownpaymentNum,
           stock: Number(stockVal) || 1,
@@ -782,35 +1251,32 @@
           engine: engineVal,
           transmission: transmissionVal,
           location: locationVal,
-          description: descriptionVal || defaultDesc,
           finance_36: fin36,
           finance_48: fin48,
-          finance_60: fin60,
-          photo: validPhotos.length > 0 ? validPhotos[0] : '',
-          photos: validPhotos
+          finance_60: fin60
         };
 
-        saveCustomCar(newCar);
-
-        const grid = document.getElementById('featured-grid');
-        const emptyState = document.getElementById('empty-state');
-        const cardEl = createCarCardElement(newCar);
-        if (grid && emptyState) {
-          grid.insertBefore(cardEl, emptyState);
-        } else if (grid) {
-          grid.appendChild(cardEl);
+        try {
+          const docRef = await addDoc(collection(db, "cars"), newCarDoc);
+          addVehicleForm.reset();
+          resetPhotoSelection();
+          document.getElementById('add-form')?.classList.add('hidden');
+          showFlash('success', `Vehicle "${fullName}" added successfully to Firestore collection "cars"!`);
+          loadCarsFromFirestore();
+        } catch (err) {
+          console.error("Error saving car to Firestore:", err);
+          showFlash('danger', 'Failed to save vehicle to Firestore: ' + err.message);
+        } finally {
+          if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'ADD VEHICLE';
+          }
         }
-
-        updateVehicleCount();
-        addVehicleForm.reset();
-        resetPhotoSelection();
-        document.getElementById('add-form').classList.add('hidden');
-        showFlash('success', `Vehicle "${fullName}" with ${validPhotos.length} photo(s) was added to inventory.`);
       });
     }
 
-    // Initialize inventory immediately
-    initInventory();
+    // Initialize Inventory on load from Firestore
+    loadCarsFromFirestore();
   </script>
 </body>
 </html>

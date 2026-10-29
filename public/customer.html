@@ -314,19 +314,10 @@
     </div>
   </footer>
 
-  <script>
-    // Clean up any old demo state from previous sessions to ensure customer table starts clean
-    try {
-      localStorage.removeItem('kreditcars_deleted_customers');
-      localStorage.removeItem('kreditcars_custom_customers');
-      localStorage.removeItem('kreditcars_accepted_requests');
-    } catch (e) {}
+  <script type="module">
+    import { db, collection, doc, addDoc, getDocs, deleteDoc, query, orderBy, serverTimestamp, onSnapshot } from './firebase.js';
 
-    // Storage keys
-    const STORAGE_KEY_INQUIRIES = 'kreditcars_inquiries';
-    const STORAGE_KEY_CUSTOMERS = 'kreditcars_customers_list';
-
-    // Helper: Escape HTML string
+    // ── Helpers ──────────────────────────────────────────────
     function escapeHtml(str) {
       if (str === null || str === undefined) return '';
       return String(str)
@@ -337,81 +328,21 @@
         .replace(/'/g, '&#39;');
     }
 
-    // Helper: Split full name into first and last name
     function splitName(fullName) {
       const parts = (fullName || '').trim().split(/\s+/);
       if (parts.length === 0 || !parts[0]) return { firstName: 'Customer', lastName: '' };
       if (parts.length === 1) return { firstName: parts[0], lastName: '-' };
-      const firstName = parts[0];
-      const lastName = parts.slice(1).join(' ');
-      return { firstName, lastName };
+      return { firstName: parts[0], lastName: parts.slice(1).join(' ') };
     }
 
-    // Storage accessors
-    function getInquiries() {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY_INQUIRIES);
-        return data ? JSON.parse(data) : [];
-      } catch (err) {
-        return [];
-      }
+    function formatDate(ts) {
+      if (!ts) return '';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' +
+             d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     }
 
-    function saveInquiries(inqs) {
-      try {
-        localStorage.setItem(STORAGE_KEY_INQUIRIES, JSON.stringify(inqs));
-      } catch (err) {
-        console.error('Error saving inquiries:', err);
-      }
-    }
-
-    function addInquiry(inq) {
-      const inqs = getInquiries();
-      inqs.unshift(inq);
-      saveInquiries(inqs);
-    }
-
-    function removeInquiry(id) {
-      const inqs = getInquiries().filter(inq => String(inq.id) !== String(id));
-      saveInquiries(inqs);
-    }
-
-    function getCustomers() {
-      try {
-        const data = localStorage.getItem(STORAGE_KEY_CUSTOMERS);
-        return data ? JSON.parse(data) : [];
-      } catch (err) {
-        return [];
-      }
-    }
-
-    function saveCustomers(custs) {
-      try {
-        localStorage.setItem(STORAGE_KEY_CUSTOMERS, JSON.stringify(custs));
-      } catch (err) {
-        console.error('Error saving customers:', err);
-      }
-    }
-
-    function addCustomer(cust) {
-      const custs = getCustomers();
-      custs.push(cust);
-      saveCustomers(custs);
-    }
-
-    function removeCustomer(id) {
-      const custs = getCustomers().filter(c => String(c.id) !== String(id));
-      saveCustomers(custs);
-    }
-
-    function generateNextCustomerId() {
-      const custs = getCustomers();
-      if (custs.length === 0) return 101;
-      const maxId = custs.reduce((max, c) => Math.max(max, Number(c.id) || 0), 100);
-      return maxId + 1;
-    }
-
-    // Mobile menu toggle
+    // ── Mobile menu toggle ───────────────────────────────────
     const mobileBtn = document.getElementById('mobile-btn');
     if (mobileBtn) {
       mobileBtn.addEventListener('click', function() {
@@ -422,7 +353,7 @@
       });
     }
 
-    // Flash message helper
+    // ── Flash message helper ─────────────────────────────────
     function showFlash(type, message) {
       const flash = document.getElementById('flash-container');
       if (!flash) return;
@@ -450,7 +381,7 @@
       flash.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
-    // Custom Pop-Out Confirmation Modal
+    // ── Confirmation Modal ───────────────────────────────────
     let pendingConfirmAction = null;
 
     function showConfirmModal(opts) {
@@ -511,17 +442,17 @@
       });
     }
 
-    // Render Notifications Container (Inquiries)
-    function renderInquiries() {
-      const inquiries = getInquiries();
+    // ── Render Inquiries from Firestore (real-time) ─────────
+    // Cache for use by accept/dismiss handlers
+    let currentInquiries = [];
+
+    function renderInquiriesFromData(inquiries) {
+      currentInquiries = inquiries;
       const list = document.getElementById('requests-list');
       const emptyNotif = document.getElementById('notifications-empty');
       const countBadge = document.getElementById('notifications-count-badge');
 
-      if (countBadge) {
-        countBadge.textContent = inquiries.length;
-      }
-
+      if (countBadge) countBadge.textContent = inquiries.length;
       if (!list) return;
       list.innerHTML = '';
 
@@ -535,35 +466,43 @@
       inquiries.forEach(inq => {
         const card = document.createElement('div');
         card.className = 'bg-[#0B1320] border border-slate-800 rounded-lg p-3 text-xs shadow hover:border-slate-700 transition';
-        card.id = inq.id;
+
+        // Map Firestore fields to display fields
+        const displayName = inq.customerName || inq.fullName || 'Customer';
+        const displayVehicle = inq.carName || inq.vehicle || 'Vehicle Inquiry';
+        const displayPhone = inq.phone || (inq.contact ? inq.contact.split('|')[0].trim() : '');
+        const displayEmail = inq.email || (inq.contact && inq.contact.includes('|') ? inq.contact.split('|')[1].trim() : '');
+        const displayDate = formatDate(inq.createdAt) || inq.date || '';
+        const displayPreference = inq.preference || 'Direct Purchase';
+        const displayMessage = inq.message || '';
 
         card.innerHTML = `
           <div class="flex items-start justify-between gap-2">
             <div class="flex-1 min-w-0">
               <div class="flex items-center justify-between gap-1 mb-1">
                 <span class="uppercase text-[9px] text-amber-400 font-bold tracking-wider px-1.5 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 truncate">
-                  ${escapeHtml(inq.vehicle || 'Vehicle Inquiry')}
+                  ${escapeHtml(displayVehicle)}
                 </span>
-                <span class="text-[10px] text-slate-500 font-mono flex-shrink-0">${escapeHtml(inq.date || '')}</span>
+                <span class="text-[10px] text-slate-500 font-mono flex-shrink-0">${escapeHtml(displayDate)}</span>
               </div>
-              <div class="font-bold text-sm text-white truncate">${escapeHtml(inq.fullName)}</div>
+              <div class="font-bold text-sm text-white truncate">${escapeHtml(displayName)}</div>
               <div class="text-[11px] text-slate-300 mt-1 flex items-center gap-1.5">
                 <span class="text-slate-500">Phone:</span>
-                <span class="font-mono text-slate-200">${escapeHtml(inq.phone)}</span>
+                <span class="font-mono text-slate-200">${escapeHtml(displayPhone)}</span>
               </div>
-              ${inq.email ? `
+              ${displayEmail ? `
                 <div class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1.5 truncate">
                   <span class="text-slate-500">Email:</span>
-                  <span class="text-slate-300">${escapeHtml(inq.email)}</span>
+                  <span class="text-slate-300">${escapeHtml(displayEmail)}</span>
                 </div>
               ` : ''}
               <div class="text-[11px] text-cyan-400 font-medium mt-1.5 flex items-center gap-1">
                 <span class="text-slate-500 text-[10px] uppercase font-mono">Option:</span>
-                <span>${escapeHtml(inq.preference || 'Direct Purchase')}</span>
+                <span>${escapeHtml(displayPreference)}</span>
               </div>
-              ${inq.message ? `
+              ${displayMessage ? `
                 <div class="text-[11px] text-slate-400 mt-2 italic bg-slate-900/70 p-2 rounded border border-slate-800/80 break-words">
-                  "${escapeHtml(inq.message)}"
+                  "${escapeHtml(displayMessage)}"
                 </div>
               ` : ''}
             </div>
@@ -578,80 +517,110 @@
           </div>
         `;
 
-        // Handle Accept click
-        card.querySelector('.btn-accept-inq').addEventListener('click', function() {
-          confirmAcceptInquiry(inq);
-        });
-
-        // Handle Dismiss click
-        card.querySelector('.btn-decline-inq').addEventListener('click', function() {
-          confirmDismissInquiry(inq);
-        });
+        card.querySelector('.btn-accept-inq').addEventListener('click', () => confirmAcceptInquiry(inq));
+        card.querySelector('.btn-decline-inq').addEventListener('click', () => confirmDismissInquiry(inq));
 
         list.appendChild(card);
       });
     }
 
-    // Accept Inquiry: moves from Notifications container to Customers container
+    // Start real-time listener for Firestore "inquiries" collection
+    try {
+      const inqQuery = query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'));
+      onSnapshot(inqQuery, (snapshot) => {
+        const inquiries = [];
+        snapshot.forEach(docSnap => {
+          inquiries.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        renderInquiriesFromData(inquiries);
+      }, (err) => {
+        console.warn('Firestore inquiries listener error:', err);
+        // Fallback: one-time fetch without ordering
+        getDocs(collection(db, 'inquiries')).then(snap => {
+          const inquiries = [];
+          snap.forEach(d => inquiries.push({ id: d.id, ...d.data() }));
+          inquiries.sort((a, b) => {
+            const ta = a.createdAt?.toDate?.() || new Date(0);
+            const tb = b.createdAt?.toDate?.() || new Date(0);
+            return tb - ta;
+          });
+          renderInquiriesFromData(inquiries);
+        }).catch(e => console.error('Fallback fetch failed:', e));
+      });
+    } catch (e) {
+      console.error('Could not set up inquiries listener:', e);
+    }
+
+    // ── Accept Inquiry ───────────────────────────────────────
     function confirmAcceptInquiry(inq) {
+      const displayName = inq.customerName || inq.fullName || 'Customer';
       showConfirmModal({
         title: 'Accept Inquiry',
-        message: `Accept inquiry from <span class="font-bold text-white">${escapeHtml(inq.fullName)}</span> and add to customer records?`,
+        message: `Accept inquiry from <span class="font-bold text-white">${escapeHtml(displayName)}</span> and add to customer records?`,
         confirmText: 'Yes, Accept',
         isDanger: false,
-        onConfirm: function() {
-          // Remove from inquiries
-          removeInquiry(inq.id);
+        onConfirm: async function() {
+          try {
+            // Add to Firestore "customers" collection
+            const { firstName, lastName } = splitName(displayName);
+            const phone = inq.phone || (inq.contact ? inq.contact.split('|')[0].trim() : '');
+            const email = inq.email || (inq.contact && inq.contact.includes('|') ? inq.contact.split('|')[1].trim() : '');
 
-          // Add to customer directory
-          const { firstName, lastName } = splitName(inq.fullName);
-          const newCust = {
-            id: generateNextCustomerId(),
-            firstName: firstName,
-            lastName: lastName,
-            fullName: inq.fullName,
-            phone: inq.phone,
-            email: inq.email || '',
-            option: inq.preference || 'Direct Purchase',
-            vehicle: inq.vehicle || '',
-            dateAdded: new Date().toISOString()
-          };
+            await addDoc(collection(db, 'customers'), {
+              firstName,
+              lastName,
+              fullName: displayName,
+              phone,
+              email,
+              option: inq.preference || 'Direct Purchase',
+              vehicle: inq.carName || inq.vehicle || '',
+              createdAt: serverTimestamp()
+            });
 
-          addCustomer(newCust);
+            // Remove inquiry from Firestore
+            await deleteDoc(doc(db, 'inquiries', inq.id));
 
-          // Re-render both containers
-          renderInquiries();
-          renderCustomers();
-
-          showFlash('success', `Inquiry from ${inq.fullName} accepted and added to the Customers container as Customer #${newCust.id}!`);
+            // Customers table re-renders via its own snapshot listener
+            showFlash('success', `Inquiry from ${displayName} accepted and added to the Customers table!`);
+          } catch (err) {
+            console.error('Error accepting inquiry:', err);
+            showFlash('danger', 'Failed to accept inquiry. Check console for details.');
+          }
         }
       });
     }
 
-    // Dismiss Inquiry
+    // ── Dismiss Inquiry ──────────────────────────────────────
     function confirmDismissInquiry(inq) {
+      const displayName = inq.customerName || inq.fullName || 'Customer';
       showConfirmModal({
         title: 'Dismiss Inquiry',
-        message: `Dismiss inquiry from <span class="font-bold text-white">${escapeHtml(inq.fullName)}</span>? This inquiry will be removed from Notifications.`,
+        message: `Dismiss inquiry from <span class="font-bold text-white">${escapeHtml(displayName)}</span>? This inquiry will be removed.`,
         confirmText: 'Yes, Dismiss',
         isDanger: true,
-        onConfirm: function() {
-          removeInquiry(inq.id);
-          renderInquiries();
-          showFlash('success', `Inquiry from ${inq.fullName} was dismissed.`);
+        onConfirm: async function() {
+          try {
+            await deleteDoc(doc(db, 'inquiries', inq.id));
+            showFlash('success', `Inquiry from ${displayName} was dismissed.`);
+          } catch (err) {
+            console.error('Error dismissing inquiry:', err);
+            showFlash('danger', 'Failed to dismiss inquiry. Check console for details.');
+          }
         }
       });
     }
 
-    // Render Customers Container (Table)
-    function renderCustomers() {
-      const custs = getCustomers();
+    // ── Render Customers from Firestore (real-time) ─────────
+    let currentCustomers = [];
+
+    function renderCustomersFromData(customers) {
+      currentCustomers = customers;
       const tbody = document.getElementById('customers-table-body');
       const emptyRow = document.getElementById('empty-state-row');
       const countText = document.getElementById('active-count-text');
 
       if (countText) {
-        countText.textContent = `${custs.length} Active Customer${custs.length === 1 ? '' : 's'}`;
+        countText.textContent = `${customers.length} Active Customer${customers.length === 1 ? '' : 's'}`;
       }
 
       if (!tbody) return;
@@ -659,20 +628,20 @@
       // Clear existing customer rows while preserving empty-state-row
       tbody.querySelectorAll('.customer-row').forEach(row => row.remove());
 
-      if (custs.length === 0) {
+      if (customers.length === 0) {
         if (emptyRow) emptyRow.classList.remove('hidden');
         return;
       }
 
       if (emptyRow) emptyRow.classList.add('hidden');
 
-      custs.forEach(cust => {
+      customers.forEach(cust => {
         const tr = document.createElement('tr');
         tr.className = 'customer-row hover:bg-slate-800/30 transition';
         tr.setAttribute('data-id', cust.id);
         tr.setAttribute('data-name', cust.fullName || `${cust.firstName} ${cust.lastName}`);
         tr.innerHTML = `
-          <td class="px-4 py-3 align-middle text-slate-400 font-mono">${cust.id}</td>
+          <td class="px-4 py-3 align-middle text-slate-400 font-mono">${escapeHtml(cust.id.slice(0,6))}</td>
           <td class="px-4 py-3 align-middle font-medium text-white">${escapeHtml(cust.firstName)}</td>
           <td class="px-4 py-3 align-middle text-slate-300">${escapeHtml(cust.lastName)}</td>
           <td class="px-4 py-3 align-middle text-slate-400">${escapeHtml(cust.phone)}</td>
@@ -684,33 +653,55 @@
           </td>
         `;
 
-        const delBtn = tr.querySelector('.btn-del-cust');
-        if (delBtn) {
-          delBtn.addEventListener('click', function() {
-            confirmDeleteCustomer(cust.id, cust.fullName || `${cust.firstName} ${cust.lastName}`);
-          });
-        }
+        tr.querySelector('.btn-del-cust').addEventListener('click', () => {
+          confirmDeleteCustomer(cust.id, cust.fullName || `${cust.firstName} ${cust.lastName}`);
+        });
 
         tbody.appendChild(tr);
       });
     }
 
-    // Confirm Delete Customer
+    // Start real-time listener for Firestore "customers" collection
+    try {
+      const custQuery = query(collection(db, 'customers'), orderBy('createdAt', 'desc'));
+      onSnapshot(custQuery, (snapshot) => {
+        const customers = [];
+        snapshot.forEach(docSnap => {
+          customers.push({ id: docSnap.id, ...docSnap.data() });
+        });
+        renderCustomersFromData(customers);
+      }, (err) => {
+        console.warn('Firestore customers listener error:', err);
+        getDocs(collection(db, 'customers')).then(snap => {
+          const customers = [];
+          snap.forEach(d => customers.push({ id: d.id, ...d.data() }));
+          renderCustomersFromData(customers);
+        }).catch(e => console.error('Fallback customers fetch failed:', e));
+      });
+    } catch (e) {
+      console.error('Could not set up customers listener:', e);
+    }
+
+    // ── Delete Customer ──────────────────────────────────────
     function confirmDeleteCustomer(id, name) {
       showConfirmModal({
         title: 'Delete Customer',
         message: `Delete customer record for <span class="font-bold text-white">${escapeHtml(name || '#' + id)}</span>? This action cannot be undone.`,
         confirmText: 'Yes, Delete',
         isDanger: true,
-        onConfirm: function() {
-          removeCustomer(id);
-          renderCustomers();
-          showFlash('success', `Customer #${id} (${name}) was removed successfully.`);
+        onConfirm: async function() {
+          try {
+            await deleteDoc(doc(db, 'customers', id));
+            showFlash('success', `Customer (${name}) was removed successfully.`);
+          } catch (err) {
+            console.error('Error deleting customer:', err);
+            showFlash('danger', 'Failed to delete customer. Check console for details.');
+          }
         }
       });
     }
 
-    // Delete form submission by ID input
+    // ── Delete form submission by ID input ────────────────────
     const deleteForm = document.getElementById('delete-form');
     if (deleteForm) {
       deleteForm.addEventListener('submit', function(e) {
@@ -719,11 +710,10 @@
         const idVal = idInput ? idInput.value.trim() : '';
         if (!idVal) return;
 
-        const custs = getCustomers();
-        const cust = custs.find(c => String(c.id) === String(idVal));
+        const cust = currentCustomers.find(c => c.id === idVal || c.id.startsWith(idVal));
 
         if (!cust) {
-          showFlash('danger', `Customer with ID #${idVal} not found.`);
+          showFlash('danger', `Customer with ID starting with "${idVal}" not found.`);
           return;
         }
 
@@ -732,7 +722,7 @@
       });
     }
 
-    // Inquiry Modal Controls
+    // ── Inquiry Modal Controls ────────────────────────────────
     const openInqBtnTop = document.getElementById('btn-open-inquiry-modal-top');
     const inqModal = document.getElementById('inquiry-modal');
     const closeInqModal = document.getElementById('close-inquiry-modal');
@@ -753,10 +743,13 @@
       });
     }
 
-    // Submit Inquiry form handler
+    // ── Submit Inquiry → Firestore ────────────────────────────
     if (inqForm) {
-      inqForm.addEventListener('submit', function(e) {
+      inqForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        const submitBtn = inqForm.querySelector('button[type="submit"]');
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+
         const fullName = (document.getElementById('inq-fullname')?.value || '').trim();
         const phone = (document.getElementById('inq-phone')?.value || '').trim();
         const email = (document.getElementById('inq-email')?.value || '').trim();
@@ -764,43 +757,30 @@
         const preference = document.getElementById('inq-preference')?.value || 'Direct Purchase (Cash)';
         const message = (document.getElementById('inq-message')?.value || '').trim();
 
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' +
-                        now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-
-        const newInquiry = {
-          id: 'inq_' + Date.now(),
-          vehicle: vehicle,
-          fullName: fullName,
-          phone: phone,
-          email: email,
-          preference: preference,
-          message: message,
-          date: dateStr,
-          status: 'New'
-        };
-
-        addInquiry(newInquiry);
-        renderInquiries();
-        hideInquiryModal();
-        inqForm.reset();
-
-        showFlash('success', `Inquiry from ${fullName} submitted successfully! It is now in the Notifications container.`);
+        try {
+          await addDoc(collection(db, 'inquiries'), {
+            carId: '',
+            carName: vehicle,
+            customerName: fullName,
+            contact: phone + (email ? ` | ${email}` : ''),
+            phone,
+            email,
+            preference,
+            message,
+            status: 'New',
+            createdAt: serverTimestamp()
+          });
+          hideInquiryModal();
+          inqForm.reset();
+          showFlash('success', `Inquiry from ${fullName} submitted successfully!`);
+        } catch (err) {
+          console.error('Error submitting inquiry:', err);
+          showFlash('danger', 'Failed to submit inquiry. Check console for details.');
+        } finally {
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Inquiry'; }
+        }
       });
     }
-
-    // Listen for storage events across tabs (e.g., when submitted from detail.html)
-    window.addEventListener('storage', function(e) {
-      if (e.key === STORAGE_KEY_INQUIRIES) {
-        renderInquiries();
-      } else if (e.key === STORAGE_KEY_CUSTOMERS) {
-        renderCustomers();
-      }
-    });
-
-    // Initial page render
-    renderInquiries();
-    renderCustomers();
   </script>
 </body>
 </html>
