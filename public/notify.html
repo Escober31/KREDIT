@@ -529,8 +529,57 @@
       getDocs,
       doc,
       updateDoc,
-      deleteDoc
+      deleteDoc,
+      addDoc
     } from './firebase.js';
+
+    // Helper: Record activity logs to localStorage & Firestore for activity.html
+    async function recordActivity(action, details) {
+      try {
+        let username = 'admin_jorge';
+        let role = 'admin';
+        const raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
+        if (raw) {
+          try {
+            const u = JSON.parse(raw);
+            if (u.username) username = u.username;
+            else if (u.fullname) username = u.fullname;
+            else if (u.email) username = u.email;
+            if (u.role) role = String(u.role).toLowerCase();
+          } catch (e) {}
+        }
+
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+        const newLog = {
+          id: 'act_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          user: username,
+          role: role,
+          action: action,
+          details: details,
+          ip: '192.168.1.10',
+          date: dateStr,
+          timestamp: Date.now()
+        };
+
+        const logsKey = 'kreditcars_activity_logs';
+        const logs = JSON.parse(localStorage.getItem(logsKey) || '[]');
+        logs.unshift(newLog);
+        localStorage.setItem(logsKey, JSON.stringify(logs));
+
+        if (typeof db !== 'undefined' && db) {
+          try {
+            await addDoc(collection(db, 'activity_logs'), newLog);
+          } catch (fsErr) {
+            console.warn('Could not sync activity to Firestore:', fsErr);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to record activity log:', err);
+      }
+    }
 
     // Mobile menu toggle
     const mobileBtn = document.getElementById('mobile-btn');
@@ -721,6 +770,7 @@
           isDanger: true,
           onConfirm: function () {
             saveProcessedAppId(appId);
+            recordActivity('APPLICANT_REJECT', `Rejected staff application for "${name}"`);
             if (row) {
               row.style.transition = 'all 0.3s ease';
               row.style.opacity = '0';
@@ -743,6 +793,7 @@
           onConfirm: function () {
             saveProcessedAppId(appId);
             addApplicantToStaff(appId);
+            recordActivity('APPLICANT_ACCEPT', `Accepted staff application for "${name}"`);
 
             if (row) {
               row.style.transition = 'all 0.3s ease';
@@ -829,6 +880,7 @@
           onConfirm: async function () {
             try {
               await updateDoc(doc(db, 'quickInquiries', docId), { status: 'accepted' });
+              recordActivity('INQUIRY_ACCEPT', `Accepted inquiry from "${name}"`);
               showFlash('success', `Request from ${name} accepted and moved to Customer Requests & Applications.`);
             } catch (err) {
               console.error('Error accepting inquiry:', err);
@@ -845,6 +897,7 @@
           onConfirm: async function () {
             try {
               await updateDoc(doc(db, 'quickInquiries', docId), { status: 'rejected' });
+              recordActivity('INQUIRY_REJECT', `Rejected inquiry from "${name}"`);
               showFlash('success', `Request from ${name} rejected.`);
             } catch (err) {
               console.error('Error rejecting inquiry:', err);
@@ -861,6 +914,7 @@
           onConfirm: async function () {
             try {
               await deleteDoc(doc(db, 'quickInquiries', docId));
+              recordActivity('INQUIRY_DELETE', `Deleted inquiry from "${name}"`);
               showFlash('success', `Request from ${name} permanently deleted.`);
             } catch (err) {
               console.error('Error deleting inquiry:', err);

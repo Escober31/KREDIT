@@ -434,7 +434,36 @@
   </footer>
 
   <!-- JAVASCRIPT -->
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      onSnapshot,
+      doc,
+      deleteDoc,
+      query,
+      orderBy
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA8IIXHHYZemvQC9SxxRJQKc2u03Z6o3Vs",
+      authDomain: "kredit-dbb5b.firebaseapp.com",
+      projectId: "kredit-dbb5b",
+      storageBucket: "kredit-dbb5b.firebasestorage.app",
+      messagingSenderId: "857700287694",
+      appId: "1:857700287694:web:e9c3c1ad0364d67f6b7c9f",
+      measurementId: "G-V9T449WRTG"
+    };
+
+    let db = null;
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+    } catch (e) {
+      console.warn('Firebase init notice in activity.html:', e);
+    }
+
     // Mobile navigation toggle
     const mobileBtn = document.getElementById('mobile-btn');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -580,11 +609,24 @@
     }
 
     // Permanently delete activities by array of IDs
-    function permanentlyDeleteActivities(ids, successMessage) {
+    async function permanentlyDeleteActivities(ids, successMessage) {
       if (!Array.isArray(ids) || ids.length === 0) return;
 
       // 1. Permanently record deletion in localStorage
       saveDeletedActivityIds(ids);
+
+      // Clean up from Firestore
+      if (db) {
+        ids.forEach(async id => {
+          try {
+            const matched = firestoreLogs.find(l => String(l.id) === String(id) || String(l.docId) === String(id));
+            const docId = matched ? (matched.docId || matched.id) : id;
+            if (docId) {
+              await deleteDoc(doc(db, 'activity_logs', String(docId)));
+            }
+          } catch (e) {}
+        });
+      }
 
       // Also clean up from kreditcars_activity_logs
       try {
@@ -807,11 +849,15 @@
       return tr;
     }
 
+    let firestoreLogs = [];
+
     // Initialize activities on load: remove any rows marked as deleted and load recorded activities
-    function initActivities() {
+    function refreshAllActivities() {
       const deletedIds = getDeletedActivityIds().map(String);
+
+      // Remove deleted static rows
       if (deletedIds.length > 0) {
-        document.querySelectorAll('.log-row').forEach(row => {
+        document.querySelectorAll('.log-row:not(.log-row-dynamic)').forEach(row => {
           const rowId = String(row.getAttribute('data-id'));
           if (deletedIds.includes(rowId)) {
             row.remove();
@@ -819,28 +865,85 @@
         });
       }
 
-      // Prepend dynamic recorded activities
+      // Remove previous dynamic rows before re-rendering
+      document.querySelectorAll('.log-row-dynamic').forEach(r => r.remove());
+
+      // Get local logs
+      let localLogs = [];
+      try {
+        const raw = localStorage.getItem('kreditcars_activity_logs');
+        if (raw) localLogs = JSON.parse(raw);
+      } catch (e) {}
+
+      // Merge Firestore logs + local logs (deduping by id)
+      const combined = [];
+      const seen = new Set();
+
+      firestoreLogs.forEach(l => {
+        const id = String(l.id || l.docId);
+        if (!seen.has(id) && !deletedIds.includes(id)) {
+          seen.add(id);
+          combined.push(l);
+        }
+      });
+
+      localLogs.forEach(l => {
+        const id = String(l.id);
+        if (!seen.has(id) && !deletedIds.includes(id)) {
+          seen.add(id);
+          combined.push(l);
+        }
+      });
+
+      // Sort newest first
+      combined.sort((a, b) => {
+        const ta = a.timestamp || (a.date ? new Date(a.date).getTime() : 0);
+        const tb = b.timestamp || (b.date ? new Date(b.date).getTime() : 0);
+        return tb - ta;
+      });
+
       const tbody = document.getElementById('logs-tbody');
       if (tbody) {
-        try {
-          const raw = localStorage.getItem('kreditcars_activity_logs');
-          const logs = raw ? JSON.parse(raw) : [];
-          if (Array.isArray(logs) && logs.length > 0) {
-            const toAdd = logs.filter(l => !deletedIds.includes(String(l.id)));
-            for (let i = toAdd.length - 1; i >= 0; i--) {
-              const tr = createActivityRow(toAdd[i]);
-              tbody.insertBefore(tr, tbody.firstChild);
-            }
-          }
-        } catch (e) {
-          console.error('Error loading activity logs:', e);
+        for (let i = combined.length - 1; i >= 0; i--) {
+          const tr = createActivityRow(combined[i]);
+          tr.classList.add('log-row-dynamic');
+          tbody.insertBefore(tr, tbody.firstChild);
         }
       }
 
       applyFilter();
     }
 
-    initActivities();
+    window.confirmDeleteSingleActivity = confirmDeleteSingleActivity;
+
+    // Connect real-time Firestore listener for activity_logs
+    if (db) {
+      try {
+        onSnapshot(collection(db, 'activity_logs'), (snapshot) => {
+          firestoreLogs = snapshot.docs.map(d => ({
+            ...d.data(),
+            docId: d.id,
+            id: d.data().id || d.id
+          }));
+          refreshAllActivities();
+        }, (err) => {
+          console.warn('Firestore activity_logs listener error:', err);
+          refreshAllActivities();
+        });
+      } catch (err) {
+        console.warn('onSnapshot error in activity.html:', err);
+        refreshAllActivities();
+      }
+    } else {
+      refreshAllActivities();
+    }
+
+    window.addEventListener('storage', function (e) {
+      if (!e.key || e.key === 'kreditcars_activity_logs' || e.key === 'kreditcars_deleted_activities') {
+        refreshAllActivities();
+      }
+    });
+    window.addEventListener('focus', refreshAllActivities);
   </script>
 </body>
 </html>

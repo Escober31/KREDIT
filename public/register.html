@@ -354,7 +354,7 @@
     import { initializeApp, deleteApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signOut }
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, serverTimestamp }
+    import { getFirestore, collection, getDocs, doc, setDoc, deleteDoc, addDoc, serverTimestamp }
       from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -392,6 +392,50 @@
         if (raw) return JSON.parse(raw);
       } catch (err) { }
       return null;
+    }
+
+    async function recordActivity(action, details) {
+      try {
+        let username = 'admin_jorge';
+        let role = 'admin';
+        const u = getLoggedInUser();
+        if (u) {
+          if (u.username) username = u.username;
+          else if (u.fullname) username = u.fullname;
+          else if (u.email) username = u.email;
+          if (u.role) role = String(u.role).toLowerCase();
+        }
+
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+        const newLog = {
+          id: 'act_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          user: username,
+          role: role,
+          action: action,
+          details: details,
+          ip: '192.168.1.10',
+          date: dateStr,
+          timestamp: Date.now()
+        };
+
+        const logsKey = 'kreditcars_activity_logs';
+        const logs = JSON.parse(localStorage.getItem(logsKey) || '[]');
+        logs.unshift(newLog);
+        localStorage.setItem(logsKey, JSON.stringify(logs));
+
+        if (typeof db !== 'undefined' && db) {
+          try {
+            await addDoc(collection(db, 'activity_logs'), newLog);
+          } catch (fsErr) {
+            console.warn('Could not sync activity to Firestore:', fsErr);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to record activity log:', err);
+      }
     }
 
     // Is this account the one currently logged in?
@@ -558,6 +602,7 @@
         onConfirm: async function () {
           try {
             await deleteUserAccount(user);
+            recordActivity('USER_DELETE', `Deleted ${(user.role || 'user').toUpperCase()} account for "${user.fullname}" (@${user.username})`);
             await renderUsersTable();
             showFlash('success', `User "${escapeHtml(user.fullname)}" was deleted.`);
           } catch (err) {
@@ -645,6 +690,7 @@
         }
 
         await createUserAccount({ fullname, username, email, contact, password, role });
+        recordActivity('USER_CREATE', `Created new ${role.toUpperCase()} account for "${fullname}" (@${username}, ${email})`);
         createForm.reset();
         await renderUsersTable();
         showFlash('success', `User "${escapeHtml(fullname)}" created in ${ROLE_COLLECTION[role]}.`);

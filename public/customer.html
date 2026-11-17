@@ -364,6 +364,53 @@
              d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
     }
 
+    async function recordActivity(action, details) {
+      try {
+        let username = 'admin_jorge';
+        let role = 'admin';
+        const raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
+        if (raw) {
+          try {
+            const u = JSON.parse(raw);
+            if (u.username) username = u.username;
+            else if (u.fullname) username = u.fullname;
+            else if (u.email) username = u.email;
+            if (u.role) role = String(u.role).toLowerCase();
+          } catch (e) {}
+        }
+
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+        const newLog = {
+          id: 'act_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          user: username,
+          role: role,
+          action: action,
+          details: details,
+          ip: '192.168.1.10',
+          date: dateStr,
+          timestamp: Date.now()
+        };
+
+        const logsKey = 'kreditcars_activity_logs';
+        const logs = JSON.parse(localStorage.getItem(logsKey) || '[]');
+        logs.unshift(newLog);
+        localStorage.setItem(logsKey, JSON.stringify(logs));
+
+        if (typeof db !== 'undefined' && db) {
+          try {
+            await addDoc(collection(db, 'activity_logs'), newLog);
+          } catch (fsErr) {
+            console.warn('Could not sync activity to Firestore:', fsErr);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to record activity log:', err);
+      }
+    }
+
     // ── Mobile menu toggle ───────────────────────────────────
     const mobileBtn = document.getElementById('mobile-btn');
     if (mobileBtn) {
@@ -602,6 +649,8 @@
             // Remove inquiry from Firestore
             await deleteDoc(doc(db, 'inquiries', inq.id));
 
+            recordActivity('CUSTOMER_ACCEPT', `Accepted customer inquiry from "${displayName}" and added to customer directory`);
+
             // Customers table re-renders via its own snapshot listener
             showFlash('success', `Inquiry from ${displayName} accepted and added to the Customers table!`);
           } catch (err) {
@@ -623,6 +672,7 @@
         onConfirm: async function() {
           try {
             await deleteDoc(doc(db, 'inquiries', inq.id));
+            recordActivity('CUSTOMER_REJECT', `Rejected customer inquiry from "${displayName}"`);
             showFlash('success', `Inquiry from ${displayName} was dismissed.`);
           } catch (err) {
             console.error('Error dismissing inquiry:', err);
@@ -714,6 +764,7 @@
         onConfirm: async function() {
           try {
             await deleteDoc(doc(db, 'customers', id));
+            recordActivity('CUSTOMER_DELETE', `Deleted customer record for "${name || '#' + id}"`);
             showFlash('success', `Customer (${name}) was removed successfully.`);
           } catch (err) {
             console.error('Error deleting customer:', err);

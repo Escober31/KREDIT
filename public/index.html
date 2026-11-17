@@ -441,8 +441,8 @@
     let editCarCurrentPhoto = '';
     let editCarNewPhoto = '';
 
-    // Helper: Record inventory activities to localStorage for activity.html
-    function recordActivity(action, details) {
+    // Helper: Record inventory activities to localStorage & Firestore for activity.html
+    async function recordActivity(action, details) {
       try {
         let username = 'admin_jorge';
         let role = 'admin';
@@ -451,6 +451,8 @@
           try {
             const u = JSON.parse(raw);
             if (u.username) username = u.username;
+            else if (u.fullname) username = u.fullname;
+            else if (u.email) username = u.email;
             if (u.role) role = String(u.role).toLowerCase();
           } catch (e) {}
         }
@@ -466,13 +468,22 @@
           action: action,
           details: details,
           ip: '192.168.1.10',
-          date: dateStr
+          date: dateStr,
+          timestamp: Date.now()
         };
 
         const logsKey = 'kreditcars_activity_logs';
         const logs = JSON.parse(localStorage.getItem(logsKey) || '[]');
         logs.unshift(newLog);
         localStorage.setItem(logsKey, JSON.stringify(logs));
+
+        if (typeof db !== 'undefined' && db) {
+          try {
+            await addDoc(collection(db, 'activity_logs'), newLog);
+          } catch (fsErr) {
+            console.warn('Could not sync activity to Firestore:', fsErr);
+          }
+        }
       } catch (err) {
         console.error('Failed to record activity log:', err);
       }
