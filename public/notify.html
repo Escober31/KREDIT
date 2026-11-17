@@ -11,19 +11,17 @@
 
   <!-- Staff access control: hide activity link in navbar if logged in as staff -->
   <script>
+    // STAFF SITE ACCESS GUARD: only logged-in staff accounts may open this page
     (function () {
       try {
         var raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
-        if (raw) {
-          var user = JSON.parse(raw);
-          if (user && String(user.role || '').toLowerCase() === 'staff') {
-            var style = document.createElement('style');
-            style.id = 'hide-activity-nav-staff';
-            style.textContent = 'a[href="activity.html"] { display: none !important; }';
-            document.head.appendChild(style);
-          }
+        var user = raw ? JSON.parse(raw) : null;
+        if (!user || String(user.role || '').toLowerCase() !== 'staff') {
+          window.location.replace('login.html');
         }
-      } catch (e) { }
+      } catch (e) {
+        window.location.replace('login.html');
+      }
     })();
   </script>
   <style>
@@ -83,8 +81,8 @@
     class="fixed top-0 left-0 right-0 z-50 h-16 md:h-20 bg-[#07101a]/60 backdrop-blur-lg border-b border-slate-800 shadow-sm">
     <div class="max-w-6xl mx-auto px-6 h-full flex items-center justify-between">
       <a href="index.html" class="flex items-center gap-3">
-        <svg viewBox="0 0 100 100" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg" role="img"
-          aria-label="KreditCars logo">
+        <svg viewBox="0 0 100 100" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg"
+          xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="KreditCars logo">
           <defs>
             <clipPath id="hexClipLogoNotify">
               <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" />
@@ -92,8 +90,8 @@
           </defs>
           <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" fill="none" stroke="#f59e0b" stroke-width="6"
             stroke-linejoin="round" />
-          <image href="images/KREDITCARS.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice"
-            clip-path="url(#hexClipLogoNotify)" />
+          <image href="images/KREDITCARS.png" xlink:href="images/KREDITCARS.png" x="0" y="0" width="100" height="100"
+            preserveAspectRatio="xMidYMid slice" clip-path="url(#hexClipLogoNotify)" />
         </svg>
 
         <div class="leading-tight">
@@ -104,15 +102,13 @@
 
       <div class="hidden md:flex items-center gap-6">
         <a href="index.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Inventory</a>
-        <a href="staff.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Staff</a>
         <a href="customer.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Customers</a>
         <a href="notify.html" class="uppercase text-sm text-amber-500 font-bold hover:text-white transition">Notify</a>
-        <a href="register.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Register</a>
-        <a href="activity.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Activity</a>
         <a href="dashboard.html"
           class="bg-amber-500 px-5 py-2 text-black font-bold uppercase transform -skew-x-6 hover:-translate-y-0.5 transition">
           <span class="inline-block skew-x-6">DashBoard</span>
         </a>
+
       </div>
 
       <button id="mobile-btn" aria-expanded="false" class="md:hidden text-white" aria-label="Toggle navigation">
@@ -125,13 +121,11 @@
     <div id="mobile-menu" class="hidden md:hidden bg-[#07101a]/95 backdrop-blur-md border-t border-slate-800">
       <div class="px-6 py-4 flex flex-col gap-3">
         <a href="index.html" class="text-slate-200 hover:text-amber-500 py-1">Inventory</a>
-        <a href="staff.html" class="text-slate-200 hover:text-amber-500 py-1">Staff</a>
         <a href="customer.html" class="text-slate-200 hover:text-amber-500 py-1">Customers</a>
         <a href="notify.html" class="text-amber-500 font-bold py-1">Notify</a>
-        <a href="register.html" class="text-slate-200 hover:text-amber-500 py-1">Register</a>
-        <a href="activity.html" class="text-slate-200 hover:text-amber-500 py-1">Activity</a>
         <a href="dashboard.html"
           class="mt-2 inline-block bg-amber-500 text-black text-center px-4 py-2 uppercase font-bold">DashBoard</a>
+
       </div>
     </div>
   </nav>
@@ -251,161 +245,8 @@
                 </thead>
                 <tbody id="applications-table-body" class="divide-y divide-slate-800/80">
 
-                  <!-- Applicant 1 -->
-                  <tr class="app-row hover:bg-slate-800/30 transition" data-id="1" data-name="Cruz, Eduardo">
-                    <td class="px-4 py-3 align-middle text-slate-400 font-mono text-xs">#01</td>
-                    <td class="px-4 py-3 align-middle font-medium text-white">
-                      <div class="flex items-center gap-2.5">
-                        <div
-                          class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0">
-                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                              clip-rule="evenodd" />
-                          </svg>
-                        </div>
-                        <span>Cruz, Eduardo</span>
-                      </div>
-                    </td>
-                    <td class="px-4 py-3 align-middle">
-                      <span
-                        class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
-                        Sales Consultant
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 align-middle text-xs text-slate-300">
-                      <div>eduardo.cruz@example.com</div>
-                      <div class="text-slate-500 mt-0.5">+63 918 555 0192</div>
-                    </td>
-                    <td class="px-4 py-3 align-middle">
-                      <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
-                        Pending
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 align-middle text-xs text-slate-400 font-mono">2026-10-21</td>
-                    <td class="px-4 py-3 align-middle text-center">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <button type="button" onclick="handleAction(1, 'accept')"
-                          class="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1 rounded text-xs font-bold transition shadow">
-                          Accept
-                        </button>
-                        <button type="button" onclick="handleAction(1, 'reject')"
-                          class="bg-red-600/80 hover:bg-red-600 text-white px-2.5 py-1 rounded text-xs font-semibold transition">
-                          Reject
-                        </button>
-                        <a href="mailto:eduardo.cruz@example.com"
-                          class="p-1 text-slate-400 hover:text-cyan-400 transition" title="Email Applicant">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
 
-                  <!-- Applicant 2 -->
-                  <tr class="app-row hover:bg-slate-800/30 transition" data-id="2" data-name="Reyes, Angela">
-                    <td class="px-4 py-3 align-middle text-slate-400 font-mono text-xs">#02</td>
-                    <td class="px-4 py-3 align-middle font-medium text-white">
-                      <div class="flex items-center gap-2.5">
-                        <div
-                          class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0">
-                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                              clip-rule="evenodd" />
-                          </svg>
-                        </div>
-                        <span>Reyes, Angela</span>
-                      </div>
-                    </td>
-                    <td class="px-4 py-3 align-middle">
-                      <span
-                        class="bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
-                        Loan & Finance Officer
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 align-middle text-xs text-slate-300">
-                      <div>angela.reyes@example.com</div>
-                      <div class="text-slate-500 mt-0.5">+63 927 444 8810</div>
-                    </td>
-                    <td class="px-4 py-3 align-middle">
-                      <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
-                        Pending
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 align-middle text-xs text-slate-400 font-mono">2026-10-20</td>
-                    <td class="px-4 py-3 align-middle text-center">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <button type="button" onclick="handleAction(2, 'accept')"
-                          class="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1 rounded text-xs font-bold transition shadow">
-                          Accept
-                        </button>
-                        <button type="button" onclick="handleAction(2, 'reject')"
-                          class="bg-red-600/80 hover:bg-red-600 text-white px-2.5 py-1 rounded text-xs font-semibold transition">
-                          Reject
-                        </button>
-                        <a href="mailto:angela.reyes@example.com"
-                          class="p-1 text-slate-400 hover:text-cyan-400 transition" title="Email Applicant">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
 
-                  <!-- Applicant 3 -->
-                  <tr class="app-row hover:bg-slate-800/30 transition" data-id="3" data-name="Bautista, Mark">
-                    <td class="px-4 py-3 align-middle text-slate-400 font-mono text-xs">#03</td>
-                    <td class="px-4 py-3 align-middle font-medium text-white">
-                      <div class="flex items-center gap-2.5">
-                        <div
-                          class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400 flex-shrink-0">
-                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                              clip-rule="evenodd" />
-                          </svg>
-                        </div>
-                        <span>Bautista, Mark</span>
-                      </div>
-                    </td>
-                    <td class="px-4 py-3 align-middle">
-                      <span
-                        class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
-                        Lead Vehicle Inspector
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 align-middle text-xs text-slate-300">
-                      <div>mark.bautista@example.com</div>
-                      <div class="text-slate-500 mt-0.5">+63 939 123 7741</div>
-                    </td>
-                    <td class="px-4 py-3 align-middle">
-                      <span class="bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded text-[11px] font-semibold">
-                        Pending
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 align-middle text-xs text-slate-400 font-mono">2026-10-19</td>
-                    <td class="px-4 py-3 align-middle text-center">
-                      <div class="flex items-center justify-center gap-1.5">
-                        <button type="button" onclick="handleAction(3, 'accept')"
-                          class="bg-amber-500 hover:bg-amber-400 text-black px-3 py-1 rounded text-xs font-bold transition shadow">
-                          Accept
-                        </button>
-                        <button type="button" onclick="handleAction(3, 'reject')"
-                          class="bg-red-600/80 hover:bg-red-600 text-white px-2.5 py-1 rounded text-xs font-semibold transition">
-                          Reject
-                        </button>
-                        <a href="mailto:mark.bautista@example.com"
-                          class="p-1 text-slate-400 hover:text-cyan-400 transition" title="Email Applicant">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                          </svg>
-                        </a>
-                      </div>
-                    </td>
-                  </tr>
 
                 </tbody>
               </table>
@@ -423,12 +264,17 @@
     <div class="max-w-6xl mx-auto px-6 grid md:grid-cols-4 gap-8 mb-8">
       <div class="md:col-span-2">
         <div class="flex items-center gap-3 mb-4">
-          <svg viewBox="0 0 100 100" class="w-8 h-8" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="KreditCars logo">
+          <svg viewBox="0 0 100 100" class="w-8 h-8" xmlns="http://www.w3.org/2000/svg"
+            xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="KreditCars logo">
             <defs>
-              <clipPath id="hexClipFooterLogoNotify"><polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" /></clipPath>
+              <clipPath id="hexClipLogoFooterNotify">
+                <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" />
+              </clipPath>
             </defs>
-            <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" fill="none" stroke="#f59e0b" stroke-width="6" stroke-linejoin="round" />
-            <image href="images/KREDITCARS.png" x="0" y="0" width="100" height="100" preserveAspectRatio="xMidYMid slice" clip-path="url(#hexClipFooterLogoNotify)" />
+            <polygon points="25,6.7 75,6.7 100,50 75,93.3 25,93.3 0,50" fill="none" stroke="#f59e0b" stroke-width="6"
+              stroke-linejoin="round" />
+            <image href="images/KREDITCARS.png" xlink:href="images/KREDITCARS.png" x="0" y="0" width="100" height="100"
+              preserveAspectRatio="xMidYMid slice" clip-path="url(#hexClipLogoFooterNotify)" />
           </svg>
           <div class="text-xl font-bold text-white">Kredit<span class="text-amber-500">Cars</span></div>
         </div>
@@ -456,9 +302,8 @@
         <h4 class="text-white font-bold uppercase mb-3 text-sm tracking-wider">Quick Links</h4>
         <div class="flex flex-col space-y-2 text-sm">
           <a href="index.html" class="hover:text-amber-400 transition">Inventory</a>
-          <a href="staff.html" class="hover:text-amber-400 transition">Staff</a>
           <a href="customer.html" class="hover:text-amber-400 transition">Customers</a>
-          <a href="notify.html" class="hover:text-amber-400 transition">Notifications</a>
+          <a href="notify.html" class="hover:text-amber-400 transition">Notification</a>
           <a href="dashboard.html" class="hover:text-amber-400 transition">Dashboard</a>
         </div>
       </div>
@@ -536,8 +381,8 @@
     // Helper: Record activity logs to localStorage & Firestore for activity.html
     async function recordActivity(action, details) {
       try {
-        let username = 'admin_jorge';
-        let role = 'admin';
+        let username = 'staff_user';
+        let role = 'staff';
         const raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
         if (raw) {
           try {
@@ -546,7 +391,7 @@
             else if (u.fullname) username = u.fullname;
             else if (u.email) username = u.email;
             if (u.role) role = String(u.role).toLowerCase();
-          } catch (e) {}
+          } catch (e) { }
         }
 
         const now = new Date();
@@ -770,7 +615,6 @@
           isDanger: true,
           onConfirm: function () {
             saveProcessedAppId(appId);
-            recordActivity('APPLICANT_REJECT', `Rejected staff application for "${name}"`);
             if (row) {
               row.style.transition = 'all 0.3s ease';
               row.style.opacity = '0';
@@ -793,7 +637,6 @@
           onConfirm: function () {
             saveProcessedAppId(appId);
             addApplicantToStaff(appId);
-            recordActivity('APPLICANT_ACCEPT', `Accepted staff application for "${name}"`);
 
             if (row) {
               row.style.transition = 'all 0.3s ease';
@@ -880,7 +723,6 @@
           onConfirm: async function () {
             try {
               await updateDoc(doc(db, 'quickInquiries', docId), { status: 'accepted' });
-              recordActivity('INQUIRY_ACCEPT', `Accepted inquiry from "${name}"`);
               showFlash('success', `Request from ${name} accepted and moved to Customer Requests & Applications.`);
             } catch (err) {
               console.error('Error accepting inquiry:', err);
@@ -897,7 +739,6 @@
           onConfirm: async function () {
             try {
               await updateDoc(doc(db, 'quickInquiries', docId), { status: 'rejected' });
-              recordActivity('INQUIRY_REJECT', `Rejected inquiry from "${name}"`);
               showFlash('success', `Request from ${name} rejected.`);
             } catch (err) {
               console.error('Error rejecting inquiry:', err);
@@ -914,7 +755,6 @@
           onConfirm: async function () {
             try {
               await deleteDoc(doc(db, 'quickInquiries', docId));
-              recordActivity('INQUIRY_DELETE', `Deleted inquiry from "${name}"`);
               showFlash('success', `Request from ${name} permanently deleted.`);
             } catch (err) {
               console.error('Error deleting inquiry:', err);
@@ -1306,6 +1146,31 @@
     }
 
     initNotify();
+  </script>
+
+  <!-- STAFF SITE: Firebase sign-in check + logout -->
+  <script type="module">
+    import { auth, onAuthStateChanged, signOut } from './firebase.js';
+
+    const SESSION_KEY = 'kreditcars_logged_in_user';
+    function clearSession() {
+      localStorage.removeItem(SESSION_KEY);
+      sessionStorage.removeItem(SESSION_KEY);
+    }
+
+    window.logout = async function () {
+      try { await signOut(auth); } catch (err) { console.warn('Sign out issue:', err); }
+      clearSession();
+      window.location.href = 'login.html';
+    };
+
+    // If Firebase says nobody is signed in, send them back to login
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        clearSession();
+        window.location.replace('login.html');
+      }
+    });
   </script>
 </body>
 

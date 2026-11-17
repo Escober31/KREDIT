@@ -445,6 +445,8 @@
       query,
       orderBy
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged }
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyA8IIXHHYZemvQC9SxxRJQKc2u03Z6o3Vs",
@@ -457,9 +459,11 @@
     };
 
     let db = null;
+    let auth = null;
     try {
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app);
+      auth = getAuth(app);
     } catch (e) {
       console.warn('Firebase init notice in activity.html:', e);
     }
@@ -916,8 +920,10 @@
 
     window.confirmDeleteSingleActivity = confirmDeleteSingleActivity;
 
-    // Connect real-time Firestore listener for activity_logs
-    if (db) {
+    // Connect real-time Firestore listener for activity_logs.
+    // Waits for Firebase Auth first, because the security rules only let a
+    // signed-in admin read this collection.
+    function startLogListener() {
       try {
         onSnapshot(collection(db, 'activity_logs'), (snapshot) => {
           firestoreLogs = snapshot.docs.map(d => ({
@@ -934,6 +940,20 @@
         console.warn('onSnapshot error in activity.html:', err);
         refreshAllActivities();
       }
+    }
+
+    if (db && auth) {
+      let listenerStarted = false;
+      onAuthStateChanged(auth, (user) => {
+        if (user) {
+          if (listenerStarted) return;
+          listenerStarted = true;
+          startLogListener();
+        } else {
+          // Not signed in to Firebase: show local logs only
+          refreshAllActivities();
+        }
+      });
     } else {
       refreshAllActivities();
     }
