@@ -11,17 +11,19 @@
 
   <!-- Staff access control: hide activity link in navbar if logged in as staff -->
   <script>
-    // STAFF SITE ACCESS GUARD: only logged-in staff accounts may open this page
     (function () {
       try {
         var raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
-        var user = raw ? JSON.parse(raw) : null;
-        if (!user || String(user.role || '').toLowerCase() !== 'staff') {
-          window.location.replace('login.html');
+        if (raw) {
+          var user = JSON.parse(raw);
+          if (user && String(user.role || '').toLowerCase() === 'staff') {
+            var style = document.createElement('style');
+            style.id = 'hide-activity-nav-staff';
+            style.textContent = 'a[href="activity.html"] { display: none !important; }';
+            document.head.appendChild(style);
+          }
         }
-      } catch (e) {
-        window.location.replace('login.html');
-      }
+      } catch (e) { }
     })();
   </script>
   <style>
@@ -102,8 +104,11 @@
 
       <div class="hidden md:flex items-center gap-6">
         <a href="index.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Inventory</a>
+        <a href="staff.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Staff</a>
         <a href="customer.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Customers</a>
         <a href="notify.html" class="uppercase text-sm text-amber-500 font-bold hover:text-white transition">Notify</a>
+        <a href="register.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Register</a>
+        <a href="activity.html" class="uppercase text-sm text-slate-300 hover:text-white transition">Activity</a>
         <a href="dashboard.html"
           class="bg-amber-500 px-5 py-2 text-black font-bold uppercase transform -skew-x-6 hover:-translate-y-0.5 transition">
           <span class="inline-block skew-x-6">DashBoard</span>
@@ -121,8 +126,11 @@
     <div id="mobile-menu" class="hidden md:hidden bg-[#07101a]/95 backdrop-blur-md border-t border-slate-800">
       <div class="px-6 py-4 flex flex-col gap-3">
         <a href="index.html" class="text-slate-200 hover:text-amber-500 py-1">Inventory</a>
+        <a href="staff.html" class="text-slate-200 hover:text-amber-500 py-1">Staff</a>
         <a href="customer.html" class="text-slate-200 hover:text-amber-500 py-1">Customers</a>
         <a href="notify.html" class="text-amber-500 font-bold py-1">Notify</a>
+        <a href="register.html" class="text-slate-200 hover:text-amber-500 py-1">Register</a>
+        <a href="activity.html" class="text-slate-200 hover:text-amber-500 py-1">Activity</a>
         <a href="dashboard.html"
           class="mt-2 inline-block bg-amber-500 text-black text-center px-4 py-2 uppercase font-bold">DashBoard</a>
 
@@ -302,8 +310,9 @@
         <h4 class="text-white font-bold uppercase mb-3 text-sm tracking-wider">Quick Links</h4>
         <div class="flex flex-col space-y-2 text-sm">
           <a href="index.html" class="hover:text-amber-400 transition">Inventory</a>
+          <a href="staff.html" class="hover:text-amber-400 transition">Staff</a>
           <a href="customer.html" class="hover:text-amber-400 transition">Customers</a>
-          <a href="notify.html" class="hover:text-amber-400 transition">Notification</a>
+          <a href="notify.html" class="hover:text-amber-400 transition">Notifications</a>
           <a href="dashboard.html" class="hover:text-amber-400 transition">Dashboard</a>
         </div>
       </div>
@@ -381,8 +390,8 @@
     // Helper: Record activity logs to localStorage & Firestore for activity.html
     async function recordActivity(action, details) {
       try {
-        let username = 'staff_user';
-        let role = 'staff';
+        let username = 'admin_user';
+        let role = 'admin';
         const raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
         if (raw) {
           try {
@@ -615,6 +624,7 @@
           isDanger: true,
           onConfirm: function () {
             saveProcessedAppId(appId);
+            recordActivity('STAFF_REJECT', `Rejected staff application for ${name}`);
             if (row) {
               row.style.transition = 'all 0.3s ease';
               row.style.opacity = '0';
@@ -637,6 +647,7 @@
           onConfirm: function () {
             saveProcessedAppId(appId);
             addApplicantToStaff(appId);
+            recordActivity('STAFF_APPROVE', `Approved staff application for ${name}`);
 
             if (row) {
               row.style.transition = 'all 0.3s ease';
@@ -723,6 +734,7 @@
           onConfirm: async function () {
             try {
               await updateDoc(doc(db, 'quickInquiries', docId), { status: 'accepted' });
+              recordActivity('NOTIFY_ACCEPT', `Accepted customer inquiry request from "${name}"`);
               showFlash('success', `Request from ${name} accepted and moved to Customer Requests & Applications.`);
             } catch (err) {
               console.error('Error accepting inquiry:', err);
@@ -739,6 +751,7 @@
           onConfirm: async function () {
             try {
               await updateDoc(doc(db, 'quickInquiries', docId), { status: 'rejected' });
+              recordActivity('NOTIFY_REJECT', `Rejected customer inquiry request from "${name}"`);
               showFlash('success', `Request from ${name} rejected.`);
             } catch (err) {
               console.error('Error rejecting inquiry:', err);
@@ -755,6 +768,7 @@
           onConfirm: async function () {
             try {
               await deleteDoc(doc(db, 'quickInquiries', docId));
+              recordActivity('NOTIFY_DELETE', `Permanently deleted customer inquiry request from "${name}"`);
               showFlash('success', `Request from ${name} permanently deleted.`);
             } catch (err) {
               console.error('Error deleting inquiry:', err);
@@ -1146,31 +1160,6 @@
     }
 
     initNotify();
-  </script>
-
-  <!-- STAFF SITE: Firebase sign-in check + logout -->
-  <script type="module">
-    import { auth, onAuthStateChanged, signOut } from './firebase.js';
-
-    const SESSION_KEY = 'kreditcars_logged_in_user';
-    function clearSession() {
-      localStorage.removeItem(SESSION_KEY);
-      sessionStorage.removeItem(SESSION_KEY);
-    }
-
-    window.logout = async function () {
-      try { await signOut(auth); } catch (err) { console.warn('Sign out issue:', err); }
-      clearSession();
-      window.location.href = 'login.html';
-    };
-
-    // If Firebase says nobody is signed in, send them back to login
-    onAuthStateChanged(auth, (user) => {
-      if (!user) {
-        clearSession();
-        window.location.replace('login.html');
-      }
-    });
   </script>
 </body>
 
