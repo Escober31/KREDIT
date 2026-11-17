@@ -8,6 +8,24 @@
   <meta name="description" content="KreditCars notifications and customer requests & applications" />
   <link rel="icon" href="images/KREDITCARS.png" />
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Staff access control: hide activity link in navbar if logged in as staff -->
+  <script>
+    (function () {
+      try {
+        var raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
+        if (raw) {
+          var user = JSON.parse(raw);
+          if (user && String(user.role || '').toLowerCase() === 'staff') {
+            var style = document.createElement('style');
+            style.id = 'hide-activity-nav-staff';
+            style.textContent = 'a[href="activity.html"] { display: none !important; }';
+            document.head.appendChild(style);
+          }
+        }
+      } catch (e) { }
+    })();
+  </script>
   <style>
     :root {
       --nav-h-mobile: 4rem;

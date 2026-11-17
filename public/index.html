@@ -13,6 +13,23 @@
     @media (max-width: 767px) { :root { --nav-h: var(--nav-h-mobile); } }
     main { padding-top: calc(var(--nav-h) + 1rem); }
   </style>
+  <script>
+    // Staff access control: hide activity link in navbar if logged in as staff
+    (function () {
+      try {
+        var raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
+        if (raw) {
+          var user = JSON.parse(raw);
+          if (user && String(user.role || '').toLowerCase() === 'staff') {
+            var style = document.createElement('style');
+            style.id = 'hide-activity-nav-staff';
+            style.textContent = 'a[href="activity.html"] { display: none !important; }';
+            document.head.appendChild(style);
+          }
+        }
+      } catch (e) { }
+    })();
+  </script>
 </head>
 <body class="bg-[#0E1621] text-slate-200 antialiased font-sans min-h-screen flex flex-col">
 
@@ -420,6 +437,43 @@
     let editCarCurrentPhoto = '';
     let editCarNewPhoto = '';
 
+    // Helper: Record inventory activities to localStorage for activity.html
+    function recordActivity(action, details) {
+      try {
+        let username = 'admin_jorge';
+        let role = 'admin';
+        const raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
+        if (raw) {
+          try {
+            const u = JSON.parse(raw);
+            if (u.username) username = u.username;
+            if (u.role) role = String(u.role).toLowerCase();
+          } catch (e) {}
+        }
+
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+
+        const newLog = {
+          id: 'act_' + Date.now() + '_' + Math.floor(Math.random() * 1000),
+          user: username,
+          role: role,
+          action: action,
+          details: details,
+          ip: '192.168.1.10',
+          date: dateStr
+        };
+
+        const logsKey = 'kreditcars_activity_logs';
+        const logs = JSON.parse(localStorage.getItem(logsKey) || '[]');
+        logs.unshift(newLog);
+        localStorage.setItem(logsKey, JSON.stringify(logs));
+      } catch (err) {
+        console.error('Failed to record activity log:', err);
+      }
+    }
+
     // Mobile nav toggle
     const mobileBtn = document.getElementById('mobile-btn');
     const mobileMenu = document.getElementById('mobile-menu');
@@ -627,6 +681,11 @@
             soldBtn.disabled = true;
             await updateDoc(doc(db, "cars", car.id), { status: newStatus });
             car.status = newStatus;
+            const actionType = newStatus === 'sold' ? 'CAR_SOLD' : 'CAR_AVAILABLE';
+            const actionText = newStatus === 'sold'
+              ? `Marked vehicle "${carTitle}" as SOLD`
+              : `Marked vehicle "${carTitle}" as AVAILABLE`;
+            recordActivity(actionType, actionText);
             showFlash('success', `Vehicle "${carTitle}" was marked as ${newStatus.toUpperCase()} in Firestore.`);
             loadCarsFromFirestore();
           } catch (err) {
@@ -650,6 +709,7 @@
             onConfirm: async () => {
               try {
                 await deleteDoc(doc(db, "cars", car.id));
+                recordActivity('CAR_DELETE', `Permanently deleted vehicle "${carTitle}" from inventory`);
                 card.style.transition = 'all 0.3s ease';
                 card.style.opacity = '0';
                 card.style.transform = 'scale(0.95)';
@@ -1033,6 +1093,7 @@
 
         try {
           await updateDoc(doc(db, "cars", carId), updatedData);
+          recordActivity('CAR_UPDATE', `Updated vehicle details and pricing for ${fullName}`);
           closeEditModalFunc();
           showFlash('success', `Vehicle "${fullName}" updated in Firestore successfully.`);
           loadCarsFromFirestore();
@@ -1258,6 +1319,7 @@
 
         try {
           const docRef = await addDoc(collection(db, "cars"), newCarDoc);
+          recordActivity('CAR_ADD', `Added new vehicle to inventory: ${fullName} (₱${cleanPriceNum.toLocaleString()})`);
           addVehicleForm.reset();
           resetPhotoSelection();
           document.getElementById('add-form')?.classList.add('hidden');

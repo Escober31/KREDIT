@@ -1,10 +1,16 @@
 // Firebase configuration and initialization for KreditCars
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore,
   collection,
   doc,
   addDoc,
+  setDoc,
   getDocs,
   getDoc,
   updateDoc,
@@ -14,7 +20,7 @@ import {
   where,
   serverTimestamp,
   onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8IIXHHYZemvQC9SxxRJQKc2u03Z6o3Vs",
@@ -29,14 +35,22 @@ const firebaseConfig = {
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
+// Initialize Firebase Auth.
+// IMPORTANT: this is what lets Firestore know who is logged in,
+// so the security rules can tell admins and staff apart from visitors.
+export const auth = getAuth(app);
+
 // Initialize Cloud Firestore and export db
 export const db = getFirestore(app);
 
-// Export firestore methods for modular consumption
+// Export firestore + auth methods for modular consumption
 export {
+  onAuthStateChanged,
+  signOut,
   collection,
   doc,
   addDoc,
+  setDoc,
   getDocs,
   getDoc,
   updateDoc,
@@ -52,10 +66,12 @@ export {
 if (typeof window !== 'undefined') {
   window.db = db;
   window.kreditFirebase = {
+    auth,
     db,
     collection,
     doc,
     addDoc,
+    setDoc,
     getDocs,
     getDoc,
     updateDoc,

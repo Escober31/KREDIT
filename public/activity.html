@@ -25,6 +25,27 @@
     .checkbox-col { width: 44px; text-align: center; }
     .hidden-checkbox { display: none !important; }
   </style>
+  <!-- ACCESS CONTROL: ADMIN ONLY -->
+  <script>
+    (function() {
+      try {
+        var raw = localStorage.getItem('kreditcars_logged_in_user') || sessionStorage.getItem('kreditcars_logged_in_user');
+        if (!raw) {
+          window.location.replace('login.html');
+          return;
+        }
+        var user = JSON.parse(raw);
+        if (!user || String(user.role || '').toLowerCase() !== 'admin') {
+          // Access restricted to administrators only
+          window.location.replace('index.html');
+          return;
+        }
+      } catch (e) {
+        window.location.replace('login.html');
+      }
+    })();
+  </script>
+
   <script>
     // Immediate anti-flash check for permanently deleted activities before rendering
     (function() {
@@ -130,7 +151,6 @@
           <option value="">All Roles</option>
           <option value="admin">Admin</option>
           <option value="staff">Staff</option>
-          <option value="user">User</option>
         </select>
       </div>
 
@@ -257,13 +277,13 @@
             </tr>
 
             <!-- Row 5 -->
-            <tr class="log-row border-t border-slate-800 hover:bg-slate-900/40 transition" data-id="5" data-user="carlos_m" data-role="user" data-action="INQUIRY_SENT">
+            <tr class="log-row border-t border-slate-800 hover:bg-slate-900/40 transition" data-id="5" data-user="carlos_m" data-role="staff" data-action="INQUIRY_SENT">
               <td class="checkbox-col p-3 text-center hidden-checkbox">
                 <input type="checkbox" class="row-checkbox rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0" value="5">
               </td>
               <td class="p-3 text-center font-medium text-white">carlos_m</td>
               <td class="p-3 text-center">
-                <span class="px-2 py-0.5 rounded text-xs uppercase font-bold bg-slate-700 text-slate-300 border border-slate-600">USER</span>
+                <span class="px-2 py-0.5 rounded text-xs uppercase font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">STAFF</span>
               </td>
               <td class="p-3 text-center font-mono text-xs text-cyan-400">INQUIRY_SENT</td>
               <td class="p-3 text-center text-slate-400">
@@ -562,6 +582,17 @@
       // 1. Permanently record deletion in localStorage
       saveDeletedActivityIds(ids);
 
+      // Also clean up from kreditcars_activity_logs
+      try {
+        const rawLogs = localStorage.getItem('kreditcars_activity_logs');
+        if (rawLogs) {
+          const logs = JSON.parse(rawLogs);
+          const strIds = ids.map(String);
+          const remaining = logs.filter(l => !strIds.includes(String(l.id)));
+          localStorage.setItem('kreditcars_activity_logs', JSON.stringify(remaining));
+        }
+      } catch (e) {}
+
       // 2. Animate and remove from DOM
       ids.forEach(id => {
         const row = document.querySelector(`.log-row[data-id="${id}"]`);
@@ -692,7 +723,87 @@
       applyFilter();
     });
 
-    // Initialize activities on load: remove any rows marked as deleted
+    // Create DOM row for dynamically logged activities
+    function createActivityRow(log) {
+      const tr = document.createElement('tr');
+      tr.className = 'log-row border-t border-slate-800 hover:bg-slate-900/40 transition';
+      tr.setAttribute('data-id', log.id);
+      tr.setAttribute('data-user', log.user || 'admin');
+      tr.setAttribute('data-role', (log.role || 'admin').toLowerCase());
+      tr.setAttribute('data-action', log.action || 'INVENTORY_ACTION');
+
+      // 1. Checkbox
+      const tdCheck = document.createElement('td');
+      tdCheck.className = selectMode ? 'checkbox-col p-3 text-center' : 'checkbox-col p-3 text-center hidden-checkbox';
+      const inputCheck = document.createElement('input');
+      inputCheck.type = 'checkbox';
+      inputCheck.className = 'row-checkbox rounded bg-slate-900 border-slate-700 text-amber-500 focus:ring-0';
+      inputCheck.value = log.id;
+      tdCheck.appendChild(inputCheck);
+      tr.appendChild(tdCheck);
+
+      // 2. User
+      const tdUser = document.createElement('td');
+      tdUser.className = 'p-3 text-center font-medium text-white';
+      tdUser.textContent = log.user || 'admin';
+      tr.appendChild(tdUser);
+
+      // 3. Role
+      const tdRole = document.createElement('td');
+      tdRole.className = 'p-3 text-center';
+      const roleBadge = document.createElement('span');
+      const isStaff = String(log.role || '').toLowerCase() === 'staff';
+      roleBadge.className = isStaff
+        ? 'px-2 py-0.5 rounded text-xs uppercase font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30'
+        : 'px-2 py-0.5 rounded text-xs uppercase font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30';
+      roleBadge.textContent = isStaff ? 'STAFF' : 'ADMIN';
+      tdRole.appendChild(roleBadge);
+      tr.appendChild(tdRole);
+
+      // 4. Action
+      const tdAction = document.createElement('td');
+      tdAction.className = 'p-3 text-center font-mono text-xs text-cyan-400';
+      tdAction.textContent = log.action || 'INVENTORY';
+      tr.appendChild(tdAction);
+
+      // 5. Details
+      const tdDetails = document.createElement('td');
+      tdDetails.className = 'p-3 text-center text-slate-400';
+      const detailsDiv = document.createElement('div');
+      detailsDiv.className = 'inline-block max-w-xs break-words';
+      detailsDiv.textContent = log.details || '';
+      tdDetails.appendChild(detailsDiv);
+      tr.appendChild(tdDetails);
+
+      // 6. IP
+      const tdIp = document.createElement('td');
+      tdIp.className = 'p-3 text-center text-slate-400 font-mono text-xs';
+      tdIp.textContent = log.ip || '192.168.1.10';
+      tr.appendChild(tdIp);
+
+      // 7. Date
+      const tdDate = document.createElement('td');
+      tdDate.className = 'p-3 text-center text-slate-400 text-xs';
+      tdDate.textContent = log.date || '';
+      tr.appendChild(tdDate);
+
+      // 8. Manage (Delete)
+      const tdManage = document.createElement('td');
+      tdManage.className = 'p-3 text-center whitespace-nowrap';
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'bg-red-600/80 hover:bg-red-600 active:scale-95 text-white text-xs font-semibold px-2.5 py-1 rounded transition shadow';
+      delBtn.textContent = 'Delete';
+      delBtn.addEventListener('click', () => {
+        confirmDeleteSingleActivity(log.id, `${log.action} — ${log.user}`);
+      });
+      tdManage.appendChild(delBtn);
+      tr.appendChild(tdManage);
+
+      return tr;
+    }
+
+    // Initialize activities on load: remove any rows marked as deleted and load recorded activities
     function initActivities() {
       const deletedIds = getDeletedActivityIds().map(String);
       if (deletedIds.length > 0) {
@@ -703,6 +814,25 @@
           }
         });
       }
+
+      // Prepend dynamic recorded activities
+      const tbody = document.getElementById('logs-tbody');
+      if (tbody) {
+        try {
+          const raw = localStorage.getItem('kreditcars_activity_logs');
+          const logs = raw ? JSON.parse(raw) : [];
+          if (Array.isArray(logs) && logs.length > 0) {
+            const toAdd = logs.filter(l => !deletedIds.includes(String(l.id)));
+            for (let i = toAdd.length - 1; i >= 0; i--) {
+              const tr = createActivityRow(toAdd[i]);
+              tbody.insertBefore(tr, tbody.firstChild);
+            }
+          }
+        } catch (e) {
+          console.error('Error loading activity logs:', e);
+        }
+      }
+
       applyFilter();
     }
 
